@@ -37,10 +37,13 @@ permissions:
 jobs:
   build:
     name: Build ${{ inputs.channel }} (${{ inputs.arch }})
-    # 优先用维护者的自托管 macOS runner（M1/M2 mac mini，比免费 macos-14 快 3-5 倍）。
-    # 离线时 GitHub 自动排队等 runner，不会回退到 macos-14；如长期离线请改回 macos-14。
-    runs-on: [self-hosted, macOS, ARM64]
-    # release-lto 在 self-hosted M1/M2 mini 通常 30-60 min；debug ~10-15 min。240 min 留足余量。
+    # 用 GitHub 免费 macos-14（M1 4-core）。自托管 LaunchAgent 跑 create-dmg 时
+    # AppleScript 控 Finder 必超时（无 Aqua GUI session），DMG 美化无法完成；
+    # 美化要的话只能走 hosted runner 或 ./run.sh 前台模式（不稳）。
+    # 见 commit 历史里 4e32f9 / 59ff1f 的 self-hosted 切换尝试。
+    runs-on: macos-14
+    # release-lto on free macos-14 (4-core M1) needs 200+ min cold; debug profile ~25-35 min.
+    # 240 min covers a cold release build with margin.
     timeout-minutes: 240
 
     env:
@@ -127,6 +130,11 @@ jobs:
         # --selfsign 会用本地 Apple Development 证书自签；运行时找不到证书时回退到 ad-hoc 签名，
         # 比 --nosign 在 macOS 上启动体验更好（仍需用户右键 Open 一次绕过 Gatekeeper）。
         # --debug 走 cargo dev profile，无 LTO，编译快很多但产物大。
+        # RUNNER_NAME=nsc-* 是 bundle 脚本里 create-dmg 跳过 AppleScript Finder 美化的开关（脚本里写死的路径名）。
+        # 自托管 LaunchAgent 没有 Aqua GUI session，AppleScript 控 Finder 必超时；借用这个旁路跳过它。
+        # 副作用：DMG 没有自定义背景/图标布局，仅功能可用。
+        env:
+          RUNNER_NAME: ${{ runner.environment != 'github-hosted' && format('nsc-{0}', runner.name) || runner.name }}
         run: |
           set -eu
           BUNDLE_ARGS=(
@@ -182,8 +190,8 @@ jobs:
         if: ${{ always() && runner.environment != 'github-hosted' }}
         run: |
           if [ -f /tmp/warp-build-prev-keychains.txt ]; then
-            # 把每行（被引号括着的路径）拼成 -s 的 N 个参数。
-            xargs -a /tmp/warp-build-prev-keychains.txt security list-keychains -d user -s
+            # macOS xargs 不支持 -a，用 stdin 重定向；list-keychains -d user -s 接受多个路径作参数。
+            xargs security list-keychains -d user -s < /tmp/warp-build-prev-keychains.txt
             rm /tmp/warp-build-prev-keychains.txt
           fi
           security delete-keychain /tmp/warp-build-empty.keychain-db 2>/dev/null || true
