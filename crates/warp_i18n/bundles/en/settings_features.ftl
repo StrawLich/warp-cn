@@ -64,6 +64,11 @@ settings-features-grace-period = Grace period (seconds)
 settings-features-wd-home-dir = Home directory
 settings-features-wd-previous-session = Previous session's directory
 settings-features-wd-custom-dir = Custom directory
+settings-features-language = Language
+settings-features-language-zh = 简体中文
+settings-features-language-en = English
+settings-features-language-system = Follow System
+settings-features-language-restart-warning = ⚠️ Switching language requires manually restarting Warp — otherwise the app will crash immediately!
 
 # Category headers
 settings-features-cat-general = General

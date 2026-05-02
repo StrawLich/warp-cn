@@ -64,6 +64,11 @@ settings-features-grace-period = 宽限期（秒）
 settings-features-wd-home-dir = 主目录
 settings-features-wd-previous-session = 上一个会话的目录
 settings-features-wd-custom-dir = 自定义目录
+settings-features-language = 语言
+settings-features-language-zh = 简体中文
+settings-features-language-en = English
+settings-features-language-system = 跟随系统
+settings-features-language-restart-warning = ⚠️ 切换语言后必须手动重启 Warp，否则会立即闪退！
 
 # 分组标题
 settings-features-cat-general = 通用

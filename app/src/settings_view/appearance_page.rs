@@ -6,7 +6,7 @@ use super::settings_page::{
 use super::{flags, SettingsSection};
 use super::{
     settings_page::{
-        build_reset_button, render_body_item, render_body_item_label, render_dropdown_item,
+        build_reset_button, render_body_item, render_body_item_label, render_dropdown_item, render_dropdown_item_label,
         SettingsPageEvent, SettingsPageMeta, SettingsPageViewHandle, ToggleState, HEADER_PADDING,
     },
     SettingsAction,
@@ -480,6 +480,7 @@ pub enum AppearancePageAction {
     RemoveDefaultDirectoryTabColor {
         path: PathBuf,
     },
+    SetLanguage(crate::language_settings::Language),
 }
 
 pub struct AppearanceSettingsPageView {
@@ -514,6 +515,7 @@ pub struct AppearanceSettingsPageView {
     color_picker_dot_states: Vec<Vec<MouseStateHandle>>,
     directory_tab_color_delete_buttons: Vec<ViewHandle<ActionButton>>,
     header_toolbar_inline_editor: ViewHandle<HeaderToolbarInlineEditor>,
+    language_dropdown: ViewHandle<Dropdown<AppearancePageAction>>,
 
     /// The context chip renderers based on the most recently
     /// selected Warp prompt configuration.
@@ -678,6 +680,14 @@ impl TypedActionView for AppearanceSettingsPageView {
                     let _ = settings.directory_tab_colors.set_value(new_value, ctx);
                 });
                 ctx.notify();
+            }
+            SetLanguage(lang) => {
+                crate::language_settings::LanguageSettings::handle(ctx).update(
+                    ctx,
+                    |settings, ctx| {
+                        report_if_error!(settings.language.set_value(*lang, ctx));
+                    },
+                );
             }
         }
     }
@@ -1200,6 +1210,34 @@ impl AppearanceSettingsPageView {
         let header_toolbar_inline_editor =
             ctx.add_typed_action_view(HeaderToolbarInlineEditor::new);
 
+        let language_dropdown = ctx.add_typed_action_view(|ctx| {
+            use crate::language_settings::{Language, LanguageSettings};
+            let mut dropdown = Dropdown::new(ctx);
+            let items = vec![
+                DropdownItem::new(
+                    warp_i18n::t!("settings-features-language-zh"),
+                    AppearancePageAction::SetLanguage(Language::Zh),
+                ),
+                DropdownItem::new(
+                    warp_i18n::t!("settings-features-language-en"),
+                    AppearancePageAction::SetLanguage(Language::En),
+                ),
+                DropdownItem::new(
+                    warp_i18n::t!("settings-features-language-system"),
+                    AppearancePageAction::SetLanguage(Language::System),
+                ),
+            ];
+            dropdown.set_items(items, ctx);
+            let current = *LanguageSettings::as_ref(ctx).language;
+            let label = match current {
+                Language::Zh => warp_i18n::t!("settings-features-language-zh"),
+                Language::En => warp_i18n::t!("settings-features-language-en"),
+                Language::System => warp_i18n::t!("settings-features-language-system"),
+            };
+            dropdown.set_selected_by_name(label, ctx);
+            dropdown
+        });
+
         AppearanceSettingsPageView {
             page: Self::build_page(ctx),
             window_id: ctx.window_id(),
@@ -1238,6 +1276,7 @@ impl AppearanceSettingsPageView {
                 .collect(),
             directory_tab_color_delete_buttons: build_directory_delete_buttons(ctx),
             header_toolbar_inline_editor,
+            language_dropdown,
             alt_screen_padding_editor,
             context_chips,
             ps1_grid_info: None,
@@ -1245,17 +1284,23 @@ impl AppearanceSettingsPageView {
     }
 
     fn build_page(ctx: &mut ViewContext<Self>) -> PageType<Self> {
-        let mut categories = vec![Category::new(
-            "Themes",
-            vec![
-                Box::new(CreateCustomThemeWidget::default()),
-                Box::new(ThemeSelectWidget::default()),
-            ],
-        )];
+        let mut categories = vec![
+            Category::new(
+                warp_i18n::t_static!("settings-features-language"),
+                vec![Box::new(LanguageWidget::default())],
+            ),
+            Category::new(
+                "Themes",
+                vec![
+                    Box::new(CreateCustomThemeWidget::default()),
+                    Box::new(ThemeSelectWidget::default()),
+                ],
+            ),
+        ];
 
         if AppIconSettings::as_ref(ctx).is_supported_on_current_platform() {
             categories.push(Category::new(
-                "Icon",
+                warp_i18n::t_static!("settings-appearance-icon"),
                 vec![Box::new(CustomAppIconWidget::default())],
             ));
         }
@@ -2638,9 +2683,11 @@ impl ThemeSelectWidget {
     ) -> Box<dyn Element> {
         let theme: WarpTheme = WarpConfig::as_ref(app).theme_config().theme(&theme_kind);
         let mode_ui_label = match theme_chooser_mode {
-            ThemeChooserMode::SystemLight => "Light",
-            ThemeChooserMode::SystemDark => "Dark",
-            ThemeChooserMode::SystemAgnostic => "Current theme",
+            ThemeChooserMode::SystemLight => "Light".to_string(),
+            ThemeChooserMode::SystemDark => "Dark".to_string(),
+            ThemeChooserMode::SystemAgnostic => {
+                warp_i18n::t!("settings-appearance-current-theme")
+            }
         };
 
         ConstrainedBox::new(
@@ -2655,7 +2702,7 @@ impl ThemeSelectWidget {
                         .with_child(
                             appearance
                                 .ui_builder()
-                                .span(mode_ui_label.to_owned())
+                                .span(mode_ui_label.clone())
                                 .with_style(
                                     UiComponentStyles::default()
                                         .set_font_weight(Weight::Bold)
@@ -2786,10 +2833,7 @@ impl SettingsWidget for ThemeSelectWidget {
             .with_child(
                 appearance
                     .ui_builder()
-                    .span(
-                        "Automatically switch between light and dark themes when your system does."
-                            .to_string(),
-                    )
+                    .span(warp_i18n::t!("settings-appearance-sync-with-os-desc"))
                     .with_style(
                         UiComponentStyles::default().set_margin(Coords::default().bottom(10.)),
                     )
@@ -3064,8 +3108,9 @@ impl SettingsWidget for WindowOpacityWidget {
         }
 
         let opacity_value = *window_settings.background_opacity;
+        let opacity_str = opacity_value.to_string();
         let mut col = Flex::column().with_child(render_body_item::<AppearancePageAction>(
-            format!("Window Opacity: {opacity_value}"),
+            warp_i18n::t!("settings-appearance-window-opacity-value", value = opacity_str.as_str()),
             // TODO(CORE-3384) add AdditionalInfo here.
             None,
             LocalOnlyIconState::for_setting(
@@ -3159,6 +3204,7 @@ impl SettingsWidget for WindowBlurWidget {
     ) -> Box<dyn Element> {
         let window_settings = WindowSettings::as_ref(app);
         let blur_value = *window_settings.background_blur_radius;
+        let blur_str = blur_value.to_string();
         let label_info = AdditionalInfo {
             mouse_state: self.info_button.clone(),
             on_click_action: Some(AppearancePageAction::OpenUrl(
@@ -3170,7 +3216,7 @@ impl SettingsWidget for WindowBlurWidget {
 
         Flex::column()
             .with_child(render_body_item::<AppearancePageAction>(
-                format!("Window Blur Radius: {blur_value}"),
+                warp_i18n::t!("settings-appearance-window-blur-radius", value = blur_str.as_str()),
                 Some(label_info),
                 LocalOnlyIconState::for_setting(
                     BackgroundBlurRadius::storage_key(),
@@ -4629,7 +4675,7 @@ impl SettingsWidget for ShowVerticalTabPanelInRestoredWindowsWidget {
         let tab_settings = TabSettings::as_ref(app);
 
         render_body_item::<AppearancePageAction>(
-            "Show vertical tabs panel in restored windows".into(),
+            warp_i18n::t!("settings-appearance-show-vtabs-restored"),
             None,
             LocalOnlyIconState::for_setting(
                 ShowVerticalTabPanelInRestoredWindows::storage_key(),
@@ -4650,10 +4696,7 @@ impl SettingsWidget for ShowVerticalTabPanelInRestoredWindowsWidget {
                     );
                 })
                 .finish(),
-            Some(
-                "When enabled, reopening or restoring a window opens the vertical tabs panel even if it was closed when the window was last saved."
-                    .to_string(),
-            ),
+            Some(warp_i18n::t!("settings-appearance-show-vtabs-restored-desc")),
         )
     }
 }
@@ -4703,10 +4746,7 @@ impl SettingsWidget for UseLatestUserPromptAsConversationTitleInTabNamesWidget {
                     );
                 })
                 .finish(),
-            Some(
-                "Show the latest user prompt instead of the generated conversation title for Oz and third-party agent sessions in vertical tabs."
-                    .to_string(),
-            ),
+            Some(warp_i18n::t!("settings-appearance-prompt-as-tab-title-desc")),
         )
     }
 }
@@ -5138,8 +5178,8 @@ impl SettingsWidget for ZoomLevelWidget {
 
         render_dropdown_item(
             appearance,
-            "Zoom",
-            Some("Adjusts the default zoom level across all windows"),
+            &warp_i18n::t!("settings-appearance-zoom"),
+            Some(&warp_i18n::t!("settings-appearance-zoom-desc")),
             Some(reset_button),
             LocalOnlyIconState::for_setting(
                 crate::window_settings::ZoomLevel::storage_key(),
@@ -5182,5 +5222,64 @@ impl SettingsPageMeta for AppearanceSettingsPageView {
 impl From<ViewHandle<AppearanceSettingsPageView>> for SettingsPageViewHandle {
     fn from(view_handle: ViewHandle<AppearanceSettingsPageView>) -> Self {
         SettingsPageViewHandle::Appearance(view_handle)
+    }
+}
+
+#[derive(Default)]
+struct LanguageWidget {}
+
+impl SettingsWidget for LanguageWidget {
+    type View = AppearanceSettingsPageView;
+
+    fn search_terms(&self) -> &str {
+        "language locale 语言 中文 english"
+    }
+
+    fn render(
+        &self,
+        view: &Self::View,
+        appearance: &Appearance,
+        _app: &AppContext,
+    ) -> Box<dyn Element> {
+        let label = render_dropdown_item_label(
+            warp_i18n::t!("settings-features-language"),
+            None,
+            LocalOnlyIconState::Hidden,
+            None,
+            appearance,
+        );
+
+        let row = Flex::row()
+            .with_cross_axis_alignment(CrossAxisAlignment::Center)
+            .with_child(
+                Shrinkable::new(
+                    1.0,
+                    Container::new(Align::new(label).left().finish())
+                        .with_margin_bottom(4.)
+                        .with_padding_right(16.)
+                        .finish(),
+                )
+                .finish(),
+            )
+            .with_child(ChildView::new(&view.language_dropdown).finish())
+            .finish();
+
+        // Live in-app locale switch crashes on macOS due to AppKit's NSMenu
+        // sharing rules during main-menu rebuild. Until the underlying menu
+        // rebuild is reworked, surface a manual-restart hint to users — bold,
+        // tinted with `ui_warning_color` so the warning is impossible to miss.
+        let warning = appearance
+            .ui_builder()
+            .span(warp_i18n::t!("settings-features-language-restart-warning"))
+            .with_style(
+                UiComponentStyles::default()
+                    .set_margin(Coords::default().bottom(10.))
+                    .set_font_color(appearance.theme().ui_warning_color())
+                    .set_font_weight(Weight::Bold),
+            )
+            .build()
+            .finish();
+
+        Flex::column().with_child(row).with_child(warning).finish()
     }
 }
