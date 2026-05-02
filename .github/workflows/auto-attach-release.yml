@@ -1,0 +1,103 @@
+name: Auto-attach build artifacts to draft release
+
+# 监听 build-mac-app.yml 成功完成事件：
+# - 取构建 run 的 head_sha
+# - 在仓库找一个 isDraft=true 且 targetCommitish 完全等于该 SHA 的 release
+# - 把 build run 的所有 artifact 下载、按友好名称重命名后挂到那个 release
+# - 不自动 publish，由维护者人工 review draft 内容后切正式
+#
+# 这样一来：
+#   1) 创建 draft release，target 设为 master 当前 HEAD
+#   2) 触发 build-mac-app，跑哪个 profile/arch 都行
+#   3) 构建完成后这个工作流自动把 artifact 落到那个 draft 上
+#   4) 全部资产齐了，去 Releases 页点 Publish
+
+on:
+  workflow_run:
+    workflows: ["Build Mac App (unsigned)"]
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: auto-attach-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  attach:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Find draft release matching build SHA
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -eu
+          # 拉最近 30 个 release 找符合的 draft。
+          tag=$(gh release list \
+                  --repo "${{ github.repository }}" \
+                  --json tagName,isDraft,targetCommitish \
+                  --limit 30 \
+                | jq -r --arg sha "$BUILD_SHA" \
+                    '.[] | select(.isDraft == true and .targetCommitish == $sha) | .tagName' \
+                | head -1)
+          if [ -z "$tag" ]; then
+            echo "::notice::No draft release targets $BUILD_SHA — skipping attach"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "::notice::Will attach artifacts to draft release $tag (SHA $BUILD_SHA)"
+
+      - name: Download build artifacts
+        if: steps.find.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          mkdir -p artifacts
+          gh run download "${{ github.event.workflow_run.id }}" \
+            --repo "${{ github.repository }}" \
+            --dir artifacts
+          echo "::group::Downloaded layout"
+          find artifacts -maxdepth 3 -type f -exec ls -la {} \;
+          echo "::endgroup::"
+
+      - name: Stage with friendly names
+        if: steps.find.outputs.skip != 'true'
+        run: |
+          set -eu
+          mkdir -p staged
+          # 每个 artifact 是 artifacts/ 下一个子目录；把它的文件按 artifact 名重命名后落入 staged/。
+          for dir in artifacts/*/; do
+            name=$(basename "$dir")
+            count=$(find "$dir" -maxdepth 1 -type f | wc -l | tr -d ' ')
+            for f in "$dir"*; do
+              [ -f "$f" ] || continue
+              ext="${f##*.}"
+              if [ "$count" = "1" ]; then
+                cp "$f" "staged/${name}.${ext}"
+              else
+                cp "$f" "staged/${name}-$(basename "$f")"
+              fi
+            done
+          done
+          echo "::group::Staged"
+          ls -la staged/
+          echo "::endgroup::"
+
+      - name: Upload to draft release
+        if: steps.find.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          gh release upload "${{ steps.find.outputs.tag }}" staged/* \
+            --repo "${{ github.repository }}" \
+            --clobber
+          echo "::notice::Attached $(ls staged | wc -l | tr -d ' ') file(s) to ${{ steps.find.outputs.tag }}"
