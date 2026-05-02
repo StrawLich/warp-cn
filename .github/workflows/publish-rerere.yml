@@ -1,0 +1,122 @@
+name: Publish rerere from resolved sync
+
+# 在合入 sync/* PR 后，把人工解过的冲突 resolution 写入 actions/cache 的
+# rerere-cache，供下一次 upstream-sync.yml 自动 replay。
+#
+# 触发方式：
+#   - 自动：sync/* 分支的 PR 被合并时
+#   - 手动：workflow_dispatch，输入 head_sha 即解决后的 merge commit (2 parents)
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: "Resolved merge commit SHA (must have 2 parents)"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-rerere
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       startsWith(github.event.pull_request.head.ref, 'sync/'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Configure git + rerere
+        run: |
+          git config user.name "warp-cn-sync[bot]"
+          git config user.email "warp-cn-sync@users.noreply.github.com"
+          git config rerere.enabled true
+          git config rerere.autoupdate true
+
+      - name: Restore rerere cache
+        uses: actions/cache@v4
+        with:
+          path: .git/rr-cache
+          key: rerere-cache-${{ github.run_id }}
+          restore-keys: |
+            rerere-cache-
+
+      - name: Install i18n-aware merge driver
+        run: ./script/install-merge-driver
+
+      - name: Replay resolved merge to record rerere
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            HEAD_SHA="${{ inputs.head_sha }}"
+          else
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          fi
+
+          git fetch origin "$HEAD_SHA" 2>/dev/null || true
+
+          PARENTS=$(git cat-file -p "$HEAD_SHA" | grep -c '^parent ' || true)
+          if [ "$PARENTS" -ne 2 ]; then
+            echo "::warning::$HEAD_SHA has $PARENTS parent(s); expected 2 (merge commit). Skipping."
+            exit 0
+          fi
+
+          P1=$(git rev-parse "$HEAD_SHA^1")
+          P2=$(git rev-parse "$HEAD_SHA^2")
+          echo "Replaying merge: $P1 + $P2 -> $HEAD_SHA"
+
+          git checkout --quiet -B rerere-replay "$P1"
+
+          set +e
+          git merge --no-edit --no-ff "$P2"
+          MERGE_RC=$?
+          set -e
+
+          if [ "$MERGE_RC" -eq 0 ]; then
+            echo "Replay produced no conflicts — nothing for rerere to learn."
+            exit 0
+          fi
+
+          # 把人工解过的最终内容从 HEAD_SHA 拷回，覆盖未合并文件 / 处理 delete-conflicts。
+          while read -r f; do
+            [ -z "$f" ] && continue
+            if git cat-file -e "$HEAD_SHA:$f" 2>/dev/null; then
+              git checkout "$HEAD_SHA" -- "$f"
+              git add -- "$f"
+            else
+              git rm --quiet -- "$f"
+            fi
+          done < <(git diff --name-only --diff-filter=U)
+
+          # delete-by-them / delete-by-us 这种不在 diff-filter=U 里。
+          while read -r line; do
+            status=${line:0:2}
+            f=${line:3}
+            case "$status" in
+              "DU"|"UD"|"AU"|"UA")
+                if git cat-file -e "$HEAD_SHA:$f" 2>/dev/null; then
+                  git checkout "$HEAD_SHA" -- "$f"
+                  git add -- "$f"
+                else
+                  git rm --quiet -- "$f"
+                fi
+                ;;
+            esac
+          done < <(git status --porcelain)
+
+          git commit --no-edit -m "rerere: record resolution from $HEAD_SHA"
+
+          echo "Recorded rerere entries:"
+          find .git/rr-cache -mindepth 1 -maxdepth 1 -type d | wc -l
+          ls -la .git/rr-cache/ || true
