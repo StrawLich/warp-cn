@@ -66,8 +66,16 @@ menu-help-github-issues = GitHub Issues...
 menu-help-slack-community = Warp Slack Community...
 
 # Context menu / pane actions.
+menu-context-cut = Cut
+menu-context-copy = Copy
+menu-context-paste = Paste
+menu-context-split-pane-right = Split pane right
+menu-context-split-pane-left = Split pane left
+menu-context-split-pane-down = Split pane down
+menu-context-split-pane-up = Split pane up
 menu-context-minimize-pane = Minimize pane
 menu-context-maximize-pane = Maximize pane
+menu-context-close-pane = Close pane
 
 # Accessibility labels and instructions.
 menu-a11y-selected = { $item } Selected
@@ -96,3 +104,39 @@ menu-user-billing-and-usage = Billing and usage
 menu-user-upgrade = Upgrade
 menu-user-invite-a-friend = Invite a friend
 menu-user-log-out = Log out
+
+# Workspace menus and tab context menus.
+menu-workspace-search-repos = Search repos
+menu-workspace-search-tabs = Search tabs...
+menu-workspace-rearrange-toolbar-items = Re-arrange toolbar items
+menu-workspace-agent = Agent
+menu-workspace-terminal = Terminal
+menu-workspace-cloud-oz = Cloud Oz
+menu-workspace-local-docker-sandbox = Local Docker Sandbox
+menu-workspace-new-worktree-config = New worktree config
+menu-workspace-new-tab-config = New tab config
+menu-workspace-current-version = Current version is {$version}
+menu-workspace-install-update = Install update ({$version})
+menu-workspace-updating-to = Updating to ({$version})
+menu-workspace-update-manually = Update Warp manually
+menu-workspace-update-and-relaunch = Update and relaunch Warp
+menu-workspace-add-new-repo = + Add new repo
+menu-tab-stop-sharing = Stop sharing
+menu-tab-share-session = Share session
+menu-tab-stop-sharing-all = Stop sharing all
+menu-tab-copy-link = Copy link
+menu-tab-rename-tab = Rename tab
+menu-tab-reset-tab-name = Reset tab name
+menu-tab-rename-pane = Rename pane
+menu-tab-reset-pane-name = Reset pane name
+menu-tab-rename-active-pane = Rename active pane
+menu-tab-reset-active-pane-name = Reset active pane name
+menu-tab-move-down = Move Tab Down
+menu-tab-move-right = Move Tab Right
+menu-tab-move-up = Move Tab Up
+menu-tab-move-left = Move Tab Left
+menu-tab-close-tab = Close tab
+menu-tab-close-other-tabs = Close other tabs
+menu-tab-close-tabs-below = Close Tabs Below
+menu-tab-close-tabs-to-right = Close Tabs to the Right
+menu-tab-save-as-new-config = Save as new config

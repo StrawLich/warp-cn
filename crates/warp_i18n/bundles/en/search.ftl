@@ -4,6 +4,10 @@
 search-no-results = No results found
 search-loading-results = Loading results...
 search-code-symbols-indexing = Code symbols indexing...
+search-global-files-placeholder = Search in files
+search-global-toggle-case-sensitive = Toggle Case Sensitivity
+search-global-toggle-regex = Toggle Regex
+search-global-label = Search
 
 # QueryFilter placeholder texts (data_source.rs)
 search-filter-placeholder-history = Search history

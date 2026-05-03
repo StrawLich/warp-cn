@@ -18,6 +18,20 @@ coding-new-empty-file = 新建空文件
 coding-unable-to-load-content = 无法加载文件内容
 coding-no-file-selected = 未选择文件
 coding-no-files-to-discard = 没有可丢弃的文件
+coding-opening-files-remote-unavailable = 远程会话中无法打开文件
+coding-open-in-new-pane = 在新窗格中打开
+coding-open-in-new-tab = 在新标签页中打开
+coding-open-file = 打开文件
+coding-new-file = 新建文件
+coding-cd-to-directory = cd 到目录
+coding-reveal-in-finder = 在 Finder 中显示
+coding-reveal-in-explorer = 在资源管理器中显示
+coding-reveal-in-file-manager = 在文件管理器中显示
+coding-rename = 重命名
+coding-delete = 删除
+coding-attach-as-context = 作为上下文附加
+coding-copy-path = 复制路径
+coding-copy-relative-path = 复制相对路径
 
 # 评论渲染
 coding-comment-outdated = 已过期

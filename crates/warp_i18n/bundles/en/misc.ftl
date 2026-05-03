@@ -22,3 +22,13 @@ misc-cycle-suggestions = Cycle suggestions
 misc-mermaid-rendering = Rendering Mermaid diagram…
 misc-no-images = No images
 misc-loading = Loading...
+
+# Notebook menus
+misc-notebook-untitled = Untitled
+misc-notebook-menu-move-to-space = Move to { $space }
+misc-notebook-menu-attach-active-session = Attach to active session
+misc-notebook-menu-copy-link = Copy link
+misc-notebook-menu-open-on-desktop = Open on Desktop
+misc-notebook-menu-duplicate = Duplicate
+misc-notebook-menu-export = Export
+misc-notebook-menu-trash = Trash

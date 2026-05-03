@@ -294,7 +294,10 @@ impl MainSettingsPageView {
 
         widgets.push(Box::new(LogoutWidget::default()));
 
-        let page = PageType::new_uncategorized(widgets, Some(warp_i18n::t_static!("settings-account-title")));
+        let page = PageType::new_uncategorized(
+            widgets,
+            Some(warp_i18n::t_static!("settings-account-title")),
+        );
 
         MainSettingsPageView { page, auth_state }
     }
@@ -367,7 +370,10 @@ impl AccountWidget {
             .with_cross_axis_alignment(CrossAxisAlignment::End);
         let current_user_id = auth_state.user_id().unwrap_or_default();
 
-        plan_info.add_child(render_customer_type_badge(appearance, warp_i18n::t!("settings-account-free")));
+        plan_info.add_child(render_customer_type_badge(
+            appearance,
+            warp_i18n::t!("settings-account-free"),
+        ));
         plan_info.add_child(
             Container::new(
                 appearance
@@ -553,8 +559,12 @@ impl AccountWidget {
                     // If the team is upgradeable to self-serve tier, show them the upgrade link.
                     if team.billing_metadata.can_upgrade_to_higher_tier_plan() {
                         let description = match team.billing_metadata.customer_type {
-                            CustomerType::Prosumer => warp_i18n::t!("settings-account-upgrade-turbo"),
-                            CustomerType::Turbo => warp_i18n::t!("settings-account-upgrade-lightspeed"),
+                            CustomerType::Prosumer => {
+                                warp_i18n::t!("settings-account-upgrade-turbo")
+                            }
+                            CustomerType::Turbo => {
+                                warp_i18n::t!("settings-account-upgrade-lightspeed")
+                            }
                             _ => warp_i18n::t!("settings-account-compare-plans"),
                         };
                         let team_uid = team.uid;
@@ -581,7 +591,8 @@ impl AccountWidget {
                 }
             }
         } else {
-            let plan_badge_child = render_customer_type_badge(appearance, warp_i18n::t!("settings-account-free"));
+            let plan_badge_child =
+                render_customer_type_badge(appearance, warp_i18n::t!("settings-account-free"));
             plan_info.add_child(plan_badge_child);
 
             plan_info.add_child(
@@ -1115,7 +1126,7 @@ impl GithubVersionInfoWidget {
                 Some(StatusContent {
                     text: warp_i18n::t!(
                         "settings-account-update-available-version",
-                        version = tag.as_str()
+                        version = tag.clone()
                     ),
                     color: ansi_red,
                 }),

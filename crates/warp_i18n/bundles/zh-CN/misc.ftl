@@ -22,3 +22,13 @@ misc-cycle-suggestions = 切换建议
 misc-mermaid-rendering = 正在渲染 Mermaid 图表…
 misc-no-images = 无图片
 misc-loading = 加载中...
+
+# 笔记本菜单
+misc-notebook-untitled = 未命名
+misc-notebook-menu-move-to-space = 移动到 { $space }
+misc-notebook-menu-attach-active-session = 附加到当前会话
+misc-notebook-menu-copy-link = 复制链接
+misc-notebook-menu-open-on-desktop = 在桌面端打开
+misc-notebook-menu-duplicate = 复制副本
+misc-notebook-menu-export = 导出
+misc-notebook-menu-trash = 移到废纸篓

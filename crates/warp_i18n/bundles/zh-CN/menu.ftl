@@ -66,8 +66,16 @@ menu-help-github-issues = GitHub Issues…
 menu-help-slack-community = Warp Slack 社区…
 
 # 上下文菜单 / 窗格操作。
+menu-context-cut = 剪切
+menu-context-copy = 复制
+menu-context-paste = 粘贴
+menu-context-split-pane-right = 向右拆分窗格
+menu-context-split-pane-left = 向左拆分窗格
+menu-context-split-pane-down = 向下拆分窗格
+menu-context-split-pane-up = 向上拆分窗格
 menu-context-minimize-pane = 最小化窗格
 menu-context-maximize-pane = 最大化窗格
+menu-context-close-pane = 关闭窗格
 
 # 无障碍标签与说明。
 menu-a11y-selected = { $item } 已选中
@@ -96,3 +104,39 @@ menu-user-billing-and-usage = 账单与用量
 menu-user-upgrade = 升级
 menu-user-invite-a-friend = 邀请好友
 menu-user-log-out = 退出登录
+
+# 工作区菜单与标签页上下文菜单。
+menu-workspace-search-repos = 搜索仓库
+menu-workspace-search-tabs = 搜索标签页...
+menu-workspace-rearrange-toolbar-items = 重新排列工具栏项目
+menu-workspace-agent = 智能体
+menu-workspace-terminal = 终端
+menu-workspace-cloud-oz = 云端 Oz
+menu-workspace-local-docker-sandbox = 本地 Docker 沙盒
+menu-workspace-new-worktree-config = 新建工作树配置
+menu-workspace-new-tab-config = 新建标签页配置
+menu-workspace-current-version = 当前版本为 {$version}
+menu-workspace-install-update = 安装更新（{$version}）
+menu-workspace-updating-to = 正在更新到（{$version}）
+menu-workspace-update-manually = 手动更新 Warp
+menu-workspace-update-and-relaunch = 更新并重启 Warp
+menu-workspace-add-new-repo = + 添加新仓库
+menu-tab-stop-sharing = 停止共享
+menu-tab-share-session = 共享会话
+menu-tab-stop-sharing-all = 停止共享全部
+menu-tab-copy-link = 复制链接
+menu-tab-rename-tab = 重命名标签页
+menu-tab-reset-tab-name = 重置标签页名称
+menu-tab-rename-pane = 重命名窗格
+menu-tab-reset-pane-name = 重置窗格名称
+menu-tab-rename-active-pane = 重命名活动窗格
+menu-tab-reset-active-pane-name = 重置活动窗格名称
+menu-tab-move-down = 标签页下移
+menu-tab-move-right = 标签页右移
+menu-tab-move-up = 标签页上移
+menu-tab-move-left = 标签页左移
+menu-tab-close-tab = 关闭标签页
+menu-tab-close-other-tabs = 关闭其他标签页
+menu-tab-close-tabs-below = 关闭下方标签页
+menu-tab-close-tabs-to-right = 关闭右侧标签页
+menu-tab-save-as-new-config = 另存为新配置

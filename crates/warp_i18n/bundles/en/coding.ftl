@@ -18,6 +18,20 @@ coding-new-empty-file = New empty file
 coding-unable-to-load-content = Unable to load file content
 coding-no-file-selected = No file selected
 coding-no-files-to-discard = No files to discard
+coding-opening-files-remote-unavailable = Opening files is unavailable for remote sessions
+coding-open-in-new-pane = Open in new pane
+coding-open-in-new-tab = Open in new tab
+coding-open-file = Open file
+coding-new-file = New file
+coding-cd-to-directory = cd to directory
+coding-reveal-in-finder = Reveal in Finder
+coding-reveal-in-explorer = Reveal in Explorer
+coding-reveal-in-file-manager = Reveal in file manager
+coding-rename = Rename
+coding-delete = Delete
+coding-attach-as-context = Attach as context
+coding-copy-path = Copy path
+coding-copy-relative-path = Copy relative path
 
 # Comment rendering
 coding-comment-outdated = Outdated

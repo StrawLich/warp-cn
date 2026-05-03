@@ -4,6 +4,10 @@
 search-no-results = 未找到匹配结果
 search-loading-results = 正在加载结果……
 search-code-symbols-indexing = 正在索引代码符号……
+search-global-files-placeholder = 在文件中搜索
+search-global-toggle-case-sensitive = 切换大小写敏感
+search-global-toggle-regex = 切换正则搜索
+search-global-label = 搜索
 
 # 查询过滤器 placeholder（data_source.rs）
 search-filter-placeholder-history = 搜索历史

@@ -117,11 +117,11 @@ pub enum NewSessionMenuItem {
     CreateNewTabConfig,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct PaneNameMenuTarget {
     pub locator: PaneViewLocator,
-    pub rename_label: &'static str,
-    pub reset_label: &'static str,
+    pub rename_label: String,
+    pub reset_label: String,
 }
 
 /// TabData struct holds the state of the given tab. It includes the pane group and mouse states
@@ -232,7 +232,7 @@ impl TabData {
                     .is_active_sharer()
                 {
                     menu_items.push(
-                        MenuItemFields::new("Stop sharing")
+                        MenuItemFields::new(warp_i18n::t!("menu-tab-stop-sharing"))
                             .with_on_select_action(WorkspaceAction::StopSharingSessionFromTabMenu {
                                 terminal_view_id: focused_session_view.id(),
                             })
@@ -240,7 +240,7 @@ impl TabData {
                     );
                 } else {
                     menu_items.push(
-                        MenuItemFields::new("Share session")
+                        MenuItemFields::new(warp_i18n::t!("menu-tab-share-session"))
                             .with_on_select_action(WorkspaceAction::OpenShareSessionModal(index))
                             .into_item(),
                     );
@@ -250,7 +250,7 @@ impl TabData {
             // Always show an option to stop sharing all when there's at least 1 shared session in the tab.
             if !shared_session_view_ids.is_empty() {
                 menu_items.push(
-                    MenuItemFields::new("Stop sharing all")
+                    MenuItemFields::new(warp_i18n::t!("menu-tab-stop-sharing-all"))
                         .with_on_select_action(WorkspaceAction::StopSharingAllSessionsInTab {
                             pane_group: self.pane_group.downgrade(),
                         })
@@ -275,7 +275,7 @@ impl TabData {
 
         if is_shared_or_viewed {
             menu_items.push(
-                MenuItemFields::new("Copy link")
+                MenuItemFields::new(warp_i18n::t!("menu-tab-copy-link"))
                     .with_on_select_action(WorkspaceAction::CopySharedSessionLinkFromTab {
                         tab_index: index,
                     })
@@ -298,15 +298,17 @@ impl TabData {
 
         // TODO add option to show the keybinding once we figure out a nice API to retrieve
         // the actual keybinding (based on the user's preferences etc.)
-        menu_items.append(&mut vec![MenuItemFields::new("Rename tab")
-            .with_on_select_action(WorkspaceAction::RenameTab(index))
-            .into_item()]);
+        menu_items.append(&mut vec![MenuItemFields::new(warp_i18n::t!(
+            "menu-tab-rename-tab"
+        ))
+        .with_on_select_action(WorkspaceAction::RenameTab(index))
+        .into_item()]);
         // Group together with rename option (note, resetting doesn't make
         // sense unless you're able to rename a tab).
         let title = self.pane_group.as_ref(ctx).custom_title(ctx);
         if title.is_some() {
             menu_items.push(
-                MenuItemFields::new("Reset tab name")
+                MenuItemFields::new(warp_i18n::t!("menu-tab-reset-tab-name"))
                     .with_on_select_action(WorkspaceAction::ResetTabName(index))
                     .into_item(),
             );
@@ -318,25 +320,27 @@ impl TabData {
         // other tabs when you don't have any others to close)
         let not_last_tab = index != tabs_len - 1;
         if not_last_tab {
+            let move_label = if uses_vertical_tabs {
+                warp_i18n::t!("menu-tab-move-down")
+            } else {
+                warp_i18n::t!("menu-tab-move-right")
+            };
             menu_items.push(
-                MenuItemFields::new(if uses_vertical_tabs {
-                    "Move Tab Down"
-                } else {
-                    "Move Tab Right"
-                })
-                .with_on_select_action(WorkspaceAction::MoveTabRight(index))
-                .into_item(),
+                MenuItemFields::new(move_label)
+                    .with_on_select_action(WorkspaceAction::MoveTabRight(index))
+                    .into_item(),
             );
         }
         if index != 0 {
+            let move_label = if uses_vertical_tabs {
+                warp_i18n::t!("menu-tab-move-up")
+            } else {
+                warp_i18n::t!("menu-tab-move-left")
+            };
             menu_items.push(
-                MenuItemFields::new(if uses_vertical_tabs {
-                    "Move Tab Up"
-                } else {
-                    "Move Tab Left"
-                })
-                .with_on_select_action(WorkspaceAction::MoveTabLeft(index))
-                .into_item(),
+                MenuItemFields::new(move_label)
+                    .with_on_select_action(WorkspaceAction::MoveTabLeft(index))
+                    .into_item(),
             );
         }
         menu_items
@@ -384,28 +388,29 @@ impl TabData {
 
         if ContextFlag::CloseWindow.is_enabled() || tabs_len != 1 {
             menu_items.push(
-                MenuItemFields::new("Close tab")
+                MenuItemFields::new(warp_i18n::t!("menu-tab-close-tab"))
                     .with_on_select_action(WorkspaceAction::CloseTab(index))
                     .into_item(),
             );
         }
         if tabs_len > 1 {
             menu_items.push(
-                MenuItemFields::new("Close other tabs")
+                MenuItemFields::new(warp_i18n::t!("menu-tab-close-other-tabs"))
                     .with_on_select_action(WorkspaceAction::CloseOtherTabs(index))
                     .into_item(),
             );
         }
         let not_last_tab = index != tabs_len - 1;
         if not_last_tab {
+            let close_label = if uses_vertical_tabs {
+                warp_i18n::t!("menu-tab-close-tabs-below")
+            } else {
+                warp_i18n::t!("menu-tab-close-tabs-to-right")
+            };
             menu_items.push(
-                MenuItemFields::new(if uses_vertical_tabs {
-                    "Close Tabs Below"
-                } else {
-                    "Close Tabs to the Right"
-                })
-                .with_on_select_action(WorkspaceAction::CloseTabsRight(index))
-                .into_item(),
+                MenuItemFields::new(close_label)
+                    .with_on_select_action(WorkspaceAction::CloseTabsRight(index))
+                    .into_item(),
             );
         }
         menu_items
@@ -415,9 +420,11 @@ impl TabData {
         if !FeatureFlag::TabConfigs.is_enabled() {
             return vec![];
         }
-        vec![MenuItemFields::new("Save as new config")
-            .with_on_select_action(WorkspaceAction::SaveCurrentTabAsNewConfig(index))
-            .into_item()]
+        vec![
+            MenuItemFields::new(warp_i18n::t!("menu-tab-save-as-new-config"))
+                .with_on_select_action(WorkspaceAction::SaveCurrentTabAsNewConfig(index))
+                .into_item(),
+        ]
     }
 
     fn color_option_menu_items(
