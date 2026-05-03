@@ -74,6 +74,60 @@ fn main() {
     )
     .expect("write key_index.rs");
     writeln!(file, "pub const EN_KEY_COUNT: usize = {};", en_keys.len()).unwrap();
+
+    // Emit a static array of (locale, filename, content) for every
+    // `bundles/<locale>/*.ftl` using `include_str!`. Replaces the previous
+    // rust-embed-based loader, which on CI silently shipped only the `en/`
+    // subtree — `zh-CN/` files never made it into the binary, so
+    // `Bundles::load` bailed with "no .ftl files found", `warp_i18n::init`
+    // returned Err, and every `t!()` rendered as `{key}` (lib.rs:107-110).
+    // `include_str!` has no runtime path concept and no feature-flag chain
+    // to misconfigure.
+    let dest = out_dir.join("embedded_bundles.rs");
+    let mut file = fs::File::create(&dest).expect("create embedded_bundles.rs");
+    writeln!(
+        file,
+        "pub static EMBEDDED_BUNDLES: &[(&str, &str, &str)] = &["
+    )
+    .unwrap();
+    let mut entries: Vec<(String, String, PathBuf)> = Vec::new();
+    for entry in walkdir::WalkDir::new(&bundles_dir).into_iter().flatten() {
+        if !entry.file_type().is_file() {
+            continue;
+        }
+        if entry.path().extension().and_then(|s| s.to_str()) != Some("ftl") {
+            continue;
+        }
+        let rel = match entry.path().strip_prefix(&bundles_dir) {
+            Ok(p) => p,
+            Err(_) => continue,
+        };
+        let locale = match rel.components().next() {
+            Some(c) => c.as_os_str().to_string_lossy().into_owned(),
+            None => continue,
+        };
+        let filename = entry
+            .path()
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            .to_owned();
+        if filename.is_empty() {
+            continue;
+        }
+        entries.push((locale, filename, entry.path().to_path_buf()));
+    }
+    // Sort so build output is deterministic across runs.
+    entries.sort_by(|a, b| (a.0.as_str(), a.1.as_str()).cmp(&(b.0.as_str(), b.1.as_str())));
+    for (locale, filename, abs_path) in &entries {
+        writeln!(
+            file,
+            "    ({:?}, {:?}, include_str!({:?})),",
+            locale, filename, abs_path
+        )
+        .unwrap();
+    }
+    writeln!(file, "];").unwrap();
 }
 
 fn is_en(path: &Path, bundles_dir: &Path) -> bool {

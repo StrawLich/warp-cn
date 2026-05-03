@@ -1,17 +1,15 @@
 use crate::locale::Locale;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use fluent_bundle::concurrent::FluentBundle;
 use fluent_bundle::{FluentArgs, FluentResource, FluentValue};
-use rust_embed::RustEmbed;
 use std::collections::HashMap;
 use std::sync::Arc;
 use unic_langid::LanguageIdentifier;
 
-/// Embed `bundles/` into the binary at compile time. Files are walked at runtime to construct
-/// per-locale `FluentBundle`s.
-#[derive(RustEmbed)]
-#[folder = "bundles/"]
-struct EmbeddedBundles;
+// Static `&[(locale, filename, content)]` produced by `build.rs` via
+// `include_str!`. Replaces a previous `RustEmbed` derive that silently
+// shipped only the `en/` subtree in CI bundle builds — see build.rs.
+include!(concat!(env!("OUT_DIR"), "/embedded_bundles.rs"));
 
 /// Immutable per-locale resource set. Cloning is cheap (Arc).
 pub struct LocaleBundle {
@@ -108,23 +106,21 @@ fn load_locale(locale: Locale) -> Result<LocaleBundle> {
     let mut bundle: FluentBundle<Arc<FluentResource>> = FluentBundle::new_concurrent(vec![langid.clone()]);
     bundle.set_use_isolating(false);
 
-    let prefix = format!("{}/", locale.as_bcp47());
+    let want_locale = locale.as_bcp47();
     let mut loaded_any = false;
-    for path in EmbeddedBundles::iter() {
-        if !path.starts_with(&prefix) || !path.ends_with(".ftl") {
+    for (entry_locale, filename, content) in EMBEDDED_BUNDLES.iter() {
+        if *entry_locale != want_locale {
             continue;
         }
-        let asset = EmbeddedBundles::get(&path)
-            .with_context(|| format!("missing embedded asset: {path}"))?;
-        let source = std::str::from_utf8(asset.data.as_ref())
-            .with_context(|| format!("non-utf8 ftl: {path}"))?
-            .to_owned();
-        let resource = FluentResource::try_new(source).map_err(|(_, errs)| {
-            anyhow::anyhow!("ftl parse errors in {path}: {:?}", errs)
+        let resource = FluentResource::try_new((*content).to_owned()).map_err(|(_, errs)| {
+            anyhow::anyhow!("ftl parse errors in {entry_locale}/{filename}: {:?}", errs)
         })?;
-        bundle
-            .add_resource(Arc::new(resource))
-            .map_err(|errs| anyhow::anyhow!("ftl add_resource errors in {path}: {:?}", errs))?;
+        bundle.add_resource(Arc::new(resource)).map_err(|errs| {
+            anyhow::anyhow!(
+                "ftl add_resource errors in {entry_locale}/{filename}: {:?}",
+                errs
+            )
+        })?;
         loaded_any = true;
     }
     if !loaded_any {
