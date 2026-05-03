@@ -14,7 +14,7 @@ mod text_layout;
 pub mod utils;
 mod window;
 
-pub use app::{App, AppExt, rebuild_main_menu};
+pub use app::{rebuild_main_menu, App, AppExt};
 pub use delegate::{AppDelegate, IntegrationTestDelegate};
 pub use fonts::FontDB;
 pub use rendering::is_low_power_gpu_available;

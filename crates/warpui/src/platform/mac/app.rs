@@ -248,9 +248,9 @@ impl AppExt for AppBuilder {
 impl App {
     /// Rebuild the main menu bar from the stored builder and set it on NSApplication.
     /// Called when the locale changes so all menu labels reflect the new language.
-    pub fn rebuild_main_menu(&mut self) {
+    pub fn rebuild_main_menu(&self, ctx: &mut AppContext) {
         if let Some(ref builder) = self.menu_bar_builder {
-            let menu_bar = self.callbacks.with_mutable_app_context(|ctx| builder(ctx));
+            let menu_bar = builder(ctx);
             unsafe {
                 let nsmenu = make_main_menu(menu_bar);
                 let () = msg_send![NSApp(), setMainMenu: nsmenu];
@@ -261,9 +261,9 @@ impl App {
 
 /// Rebuild the main menu from outside the platform crate. The stored menu_bar_builder
 /// is re-invoked so `t!()` calls inside menu constructors pick up the new locale.
-pub fn rebuild_main_menu() {
+pub fn rebuild_main_menu(ctx: &mut AppContext) {
     let app = unsafe { get_app(&mut *get_warp_app()) };
-    app.rebuild_main_menu();
+    app.rebuild_main_menu(ctx);
 }
 
 unsafe fn get_app(object: &mut Object) -> &mut App {
