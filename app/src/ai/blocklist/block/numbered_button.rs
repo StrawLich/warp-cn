@@ -1,7 +1,7 @@
 use crate::context_chips::spacing;
 use warp_core::ui::appearance::Appearance;
-use warp_i18n::t;
 use warp_core::ui::theme::color::internal_colors;
+use warp_i18n::t;
 use warpui::{
     elements::{
         Border, Container, CornerRadius, CrossAxisAlignment, Expanded, Flex, FormattedTextElement,

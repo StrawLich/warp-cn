@@ -43,7 +43,6 @@ use warpui::{
 };
 
 use crate::ai::agent::{AIAgentPtyWriteMode, CancellationReason};
-use crate::util::bindings::BindingDescriptionFluentExt;
 use crate::ai::blocklist::block::view_impl::common::{
     render_query_text, UserQueryProps, BLOCKED_ACTION_MESSAGE_FOR_GREP_OR_FILE_GLOB,
     BLOCKED_ACTION_MESSAGE_FOR_READING_FILES, BLOCKED_ACTION_MESSAGE_FOR_SEARCHING_CODEBASE,
@@ -62,6 +61,7 @@ use crate::settings::AISettings;
 use crate::terminal::input::SET_INPUT_MODE_TERMINAL_ACTION_NAME;
 use crate::terminal::model::block::BlockId;
 use crate::terminal::{ShellLaunchData, TerminalModel};
+use crate::util::bindings::BindingDescriptionFluentExt;
 use crate::view_components::DismissibleToast;
 use crate::workspace::WorkspaceAction;
 use crate::ToastStack;

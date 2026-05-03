@@ -9,8 +9,8 @@ use crate::TemplatableMCPServerManager;
 use pathfinder_geometry::vector::vec2f;
 use thousands::Separable;
 use uuid::Uuid;
-use warp_i18n::t;
 use warp_core::features::FeatureFlag;
+use warp_i18n::t;
 use warpui::elements::Dismiss;
 use warpui::elements::Hoverable;
 use warpui::elements::MouseStateHandle;
@@ -883,13 +883,9 @@ pub fn render_plan_auto_sync_toggle(
     .with_margin_right(8.)
     .finish();
 
-    let label_elem = Text::new(
-        t!("ai-ui-plan-auto-sync"),
-        appearance.ui_font_family(),
-        13.,
-    )
-    .with_color(appearance.theme().active_ui_text_color().into())
-    .finish();
+    let label_elem = Text::new(t!("ai-ui-plan-auto-sync"), appearance.ui_font_family(), 13.)
+        .with_color(appearance.theme().active_ui_text_color().into())
+        .finish();
 
     let desc_elem = Text::new(
         t!("ai-ui-plan-auto-sync-desc"),
@@ -956,13 +952,9 @@ pub fn render_web_search_toggle(
     .with_margin_right(8.)
     .finish();
 
-    let label_elem = Text::new(
-        t!("ai-ui-call-web-tools"),
-        appearance.ui_font_family(),
-        13.,
-    )
-    .with_color(appearance.theme().active_ui_text_color().into())
-    .finish();
+    let label_elem = Text::new(t!("ai-ui-call-web-tools"), appearance.ui_font_family(), 13.)
+        .with_color(appearance.theme().active_ui_text_color().into())
+        .finish();
 
     let desc_elem = Text::new(
         t!("ai-ui-call-web-tools-desc"),

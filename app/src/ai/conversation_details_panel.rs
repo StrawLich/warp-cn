@@ -8,10 +8,10 @@ use parking_lot::RwLock;
 use pathfinder_color::ColorU;
 use warp_cli::agent::Harness;
 use warp_cli::skill::SkillSpec;
-use warp_i18n::t;
 use warp_core::channel::ChannelState;
 use warp_core::features::FeatureFlag;
 use warp_core::ui::color::coloru_with_opacity;
+use warp_i18n::t;
 use warpui::{
     clipboard::ClipboardContent,
     elements::{

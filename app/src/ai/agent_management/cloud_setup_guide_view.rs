@@ -15,6 +15,7 @@ use warp_completer::signatures::CommandRegistry;
 use warp_completer::{util::parse_current_commands_and_tokens, ParsedTokensSnapshot};
 use warp_core::report_error;
 use warp_core::ui::theme::{AnsiColorIdentifier, AnsiColors};
+use warp_i18n::t;
 use warpui::clipboard::ClipboardContent;
 use warpui::elements::{
     new_scrollable::{ClippedAxisConfiguration, DualAxisConfig, NewScrollable},
@@ -28,7 +29,6 @@ use warpui::text_layout::TextStyle;
 use warpui::ui_components::components::{UiComponent, UiComponentStyles};
 use warpui::ViewHandle;
 use warpui::{AppContext, Entity, SingletonEntity, TypedActionView, View, ViewContext};
-use warp_i18n::t;
 
 const DOCS_URL: &str = "https://docs.warp.dev/agent-platform/cloud-agents/overview";
 const ENV_DOCS_URL: &str =

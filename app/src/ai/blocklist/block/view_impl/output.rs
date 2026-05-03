@@ -120,7 +120,6 @@ use super::common::{
 };
 use super::imported_comments::render_imported_comments;
 use super::orchestration;
-use warp_i18n::t;
 use super::todos::render_todos;
 use super::CONTENT_HORIZONTAL_PADDING;
 use super::{
@@ -128,6 +127,7 @@ use super::{
     render_citation_chips, todos::render_completed_todo_items, WithContentItemSpacing,
     CONTENT_ITEM_VERTICAL_MARGIN,
 };
+use warp_i18n::t;
 use warpui::{
     elements::{
         Align, Border, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,

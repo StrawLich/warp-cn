@@ -8,9 +8,9 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Arc;
 use warp_core::ui::appearance::Appearance;
-use warp_i18n::t;
 use warp_core::ui::Icon;
 use warp_editor::render::element::VerticalExpansionBehavior;
+use warp_i18n::t;
 use warpui::elements::{ConstrainedBox, ScrollbarWidth};
 use warpui::ui_components::components::UiComponent as _;
 use warpui::{
