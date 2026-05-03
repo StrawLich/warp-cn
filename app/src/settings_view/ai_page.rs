@@ -150,12 +150,24 @@ const AI_SETTINGS_DROPDOWN_MAX_HEIGHT: f32 = 250.;
 const CONTEXT_WINDOW_SLIDER_WIDTH: f32 = 220.;
 const CONTEXT_WINDOW_INPUT_BOX_WIDTH: f32 = 120.;
 
-fn next_command_description() -> String { warp_i18n::t!("settings-ai-next-command-description") }
-fn prompt_suggestions_description() -> String { warp_i18n::t!("settings-ai-prompt-suggestions-description") }
-fn suggested_code_banners_description() -> String { warp_i18n::t!("settings-ai-code-banners-description") }
-fn natural_language_autosuggestions() -> String { warp_i18n::t!("settings-ai-autosuggestions-description") }
-fn shared_block_title_generation_description() -> String { warp_i18n::t!("settings-ai-shared-block-title-description") }
-fn git_operations_autogen_description() -> String { warp_i18n::t!("settings-ai-git-autogen-description") }
+fn next_command_description() -> String {
+    warp_i18n::t!("settings-ai-next-command-description")
+}
+fn prompt_suggestions_description() -> String {
+    warp_i18n::t!("settings-ai-prompt-suggestions-description")
+}
+fn suggested_code_banners_description() -> String {
+    warp_i18n::t!("settings-ai-code-banners-description")
+}
+fn natural_language_autosuggestions() -> String {
+    warp_i18n::t!("settings-ai-autosuggestions-description")
+}
+fn shared_block_title_generation_description() -> String {
+    warp_i18n::t!("settings-ai-shared-block-title-description")
+}
+fn git_operations_autogen_description() -> String {
+    warp_i18n::t!("settings-ai-git-autogen-description")
+}
 const WISPR_FLOW_URL: &str = "https://wisprflow.ai/";
 
 pub fn init_actions_from_parent_view<T: Action + Clone>(
@@ -505,7 +517,10 @@ impl AISettingsPageView {
                 .iter()
                 .position(|val| val == current_value)
                 .unwrap_or_else(|| {
-                    log::warn!("{}", warp_i18n::t!("settings-ai-voice-input-toggle-key-error"));
+                    log::warn!(
+                        "{}",
+                        warp_i18n::t!("settings-ai-voice-input-toggle-key-error")
+                    );
                     0
                 });
 
@@ -1154,7 +1169,9 @@ impl AISettingsPageView {
             let mut dropdown = FilterableDropdown::new(ctx);
             dropdown.set_top_bar_max_width(AI_SETTINGS_DROPDOWN_WIDTH);
             dropdown.set_menu_width(AI_SETTINGS_DROPDOWN_WIDTH, ctx);
-            dropdown.set_menu_header_to_static(warp_i18n::t_static!("settings-ai-mcp-select-servers-header"));
+            dropdown.set_menu_header_to_static(warp_i18n::t_static!(
+                "settings-ai-mcp-select-servers-header"
+            ));
             dropdown
         });
         Self::refresh_mcp_allowlist_dropdown(&mcp_allowlist_dropdown, ctx);
@@ -1168,7 +1185,9 @@ impl AISettingsPageView {
             let mut dropdown = FilterableDropdown::new(ctx);
             dropdown.set_top_bar_max_width(AI_SETTINGS_DROPDOWN_WIDTH);
             dropdown.set_menu_width(AI_SETTINGS_DROPDOWN_WIDTH, ctx);
-            dropdown.set_menu_header_to_static(warp_i18n::t_static!("settings-ai-mcp-select-servers-header"));
+            dropdown.set_menu_header_to_static(warp_i18n::t_static!(
+                "settings-ai-mcp-select-servers-header"
+            ));
             dropdown
         });
         Self::refresh_mcp_denylist_dropdown(&mcp_denylist_dropdown, ctx);
@@ -1987,8 +2006,12 @@ impl AISettingsPageView {
                 AgentModeCodingPermissionsType::iter()
                     .map(|t| {
                         let display = match t {
-                            AgentModeCodingPermissionsType::AlwaysAskBeforeReading => warp_i18n::t!("settings-ai-always-ask"),
-                            AgentModeCodingPermissionsType::AlwaysAllowReading => warp_i18n::t!("settings-ai-always-allow"),
+                            AgentModeCodingPermissionsType::AlwaysAskBeforeReading => {
+                                warp_i18n::t!("settings-ai-always-ask")
+                            }
+                            AgentModeCodingPermissionsType::AlwaysAllowReading => {
+                                warp_i18n::t!("settings-ai-always-allow")
+                            }
                             AgentModeCodingPermissionsType::AllowReadingSpecificFiles => {
                                 warp_i18n::t!("settings-ai-allow-specific-dirs")
                             }
@@ -3282,16 +3305,20 @@ impl SettingsWidget for GlobalAIWidget {
             row.add_child(
                 ConstrainedBox::new(
                     Container::new(
-                        Text::new(warp_i18n::t!("settings-ai-remote-session-disallowed"), appearance.ui_font_family(), 12.)
-                            .with_color(appearance.theme().ui_warning_color())
-                            .finish()
+                        Text::new(
+                            warp_i18n::t!("settings-ai-remote-session-disallowed"),
+                            appearance.ui_font_family(),
+                            12.,
+                        )
+                        .with_color(appearance.theme().ui_warning_color())
+                        .finish(),
                     )
                     .with_padding_left(8.)
                     .with_padding_right(8.)
-                    .finish()
+                    .finish(),
                 )
                 .with_max_width(400.)
-                .finish()
+                .finish(),
             );
         }
 
@@ -3557,7 +3584,10 @@ impl SettingsWidget for UsageWidget {
                 .with_child(
                     appearance
                         .ui_builder()
-                        .paragraph(warp_i18n::t!("settings-ai-resets-after", time = formatted_next_refresh_time))
+                        .paragraph(warp_i18n::t!(
+                            "settings-ai-resets-after",
+                            time = formatted_next_refresh_time
+                        ))
                         .with_style(UiComponentStyles {
                             font_color: Some(blended_colors::text_sub(
                                 appearance.theme(),
@@ -4661,9 +4691,7 @@ impl AgentsWidget {
         render_dropdown_item(
             appearance,
             &warp_i18n::t!("settings-ai-base-model-title"),
-            Some(
-                &warp_i18n::t!("settings-ai-base-model-desc"),
-            ),
+            Some(&warp_i18n::t!("settings-ai-base-model-desc")),
             Some(show_in_prompt_checkbox),
             LocalOnlyIconState::Hidden,
             (!ai_settings.is_any_ai_enabled(app))
@@ -4692,9 +4720,7 @@ impl AgentsWidget {
         );
 
         let codebase_context_description = vec![
-            FormattedTextFragment::plain_text(
-                &warp_i18n::t!("settings-ai-codebase-context-desc"),
-            ),
+            FormattedTextFragment::plain_text(&warp_i18n::t!("settings-ai-codebase-context-desc")),
             FormattedTextFragment::hyperlink(
                 warp_i18n::t!("settings-ai-learn-more"),
                 "https://docs.warp.dev/agent-platform/capabilities/codebase-context",
@@ -5124,9 +5150,9 @@ impl AIInputWidget {
                 Vec<FormattedTextFragment>,
             > = LazyLock::new(|| {
                 vec![
-                    FormattedTextFragment::plain_text(
-                        &warp_i18n::t!("settings-ai-natural-lang-detection-desc"),
-                    ),
+                    FormattedTextFragment::plain_text(&warp_i18n::t!(
+                        "settings-ai-natural-lang-detection-desc"
+                    )),
                     FormattedTextFragment::plain_text(
                         " Encountered an incorrect input detection? ",
                     ),
@@ -5367,9 +5393,7 @@ impl AIFactWidget {
         );
 
         let rules_description = vec![
-            FormattedTextFragment::plain_text(
-                warp_i18n::t!("settings-ai-rules-help-desc"),
-            ),
+            FormattedTextFragment::plain_text(warp_i18n::t!("settings-ai-rules-help-desc")),
             FormattedTextFragment::hyperlink(
                 warp_i18n::t!("settings-ai-learn-more"),
                 "https://docs.warp.dev/agent-platform/capabilities/rules",
@@ -5535,9 +5559,7 @@ impl VoiceWidget {
         ));
 
         let voice_input_description_text_fragments = vec![
-            FormattedTextFragment::plain_text(
-                warp_i18n::t!("settings-ai-voice-input-desc"),
-            ),
+            FormattedTextFragment::plain_text(warp_i18n::t!("settings-ai-voice-input-desc")),
             FormattedTextFragment::hyperlink("Wispr Flow", WISPR_FLOW_URL),
             FormattedTextFragment::plain_text(")."),
         ];
@@ -5810,9 +5832,9 @@ impl SettingsWidget for CLIAgentWidget {
         );
 
         let description_fragments = vec![
-            FormattedTextFragment::plain_text(
-                warp_i18n::t!("settings-ai-show-coding-toolbar-desc"),
-            ),
+            FormattedTextFragment::plain_text(warp_i18n::t!(
+                "settings-ai-show-coding-toolbar-desc"
+            )),
             FormattedTextFragment::inline_code("claude"),
             FormattedTextFragment::plain_text(", "),
             FormattedTextFragment::inline_code("codex"),
@@ -6014,9 +6036,7 @@ impl SettingsWidget for CLIAgentWidget {
             };
             let command_list_description = appearance
                 .ui_builder()
-                .paragraph(
-                    warp_i18n::t!("settings-ai-toolbar-regex-desc"),
-                )
+                .paragraph(warp_i18n::t!("settings-ai-toolbar-regex-desc"))
                 .with_style(UiComponentStyles {
                     font_size: Some(appearance.ui_font_size()),
                     font_color: Some(styles::description_font_color(true, app).into()),
@@ -6426,19 +6446,17 @@ impl ApiKeysWidget {
         let is_any_ai_enabled = ai_settings.is_any_ai_enabled(app);
         let is_enabled = is_any_ai_enabled && is_byo_enabled;
 
-        let mut column = Flex::column()
-            .with_spacing(16.)
-            .with_child(
-                Container::new(
-                    render_ai_setting_description(
-                        warp_i18n::t!("settings-ai-byok-desc"),
-                        is_enabled,
-                        app,
-                    ))
-                // Remove the bottom margin of the description so that it doesn't
-                // create extra space between the description and the API key inputs.
-                .with_margin_bottom(-styles::DESCRIPTION_MARGIN_BOTTOM).finish()
-            );
+        let mut column = Flex::column().with_spacing(16.).with_child(
+            Container::new(render_ai_setting_description(
+                warp_i18n::t!("settings-ai-byok-desc"),
+                is_enabled,
+                app,
+            ))
+            // Remove the bottom margin of the description so that it doesn't
+            // create extra space between the description and the API key inputs.
+            .with_margin_bottom(-styles::DESCRIPTION_MARGIN_BOTTOM)
+            .finish(),
+        );
 
         /// Helper function to render the UI for an API key input field.
         fn render_api_key_input(

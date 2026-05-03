@@ -72,23 +72,49 @@ use warpui::fonts::Weight;
 
 const FONT_SIZE: f32 = 12.;
 
-fn safe_mode_title() -> String { warp_i18n::t!("settings-privacy-safe-mode-title") }
-fn safe_mode_description() -> String { warp_i18n::t!("settings-privacy-safe-mode-description") }
-fn user_secret_regex_title() -> String { warp_i18n::t!("settings-privacy-custom-secret-title") }
-fn user_secret_regex_description() -> String { warp_i18n::t!("settings-privacy-custom-secret-description") }
-fn telemetry_description_old() -> String { warp_i18n::t!("settings-privacy-telemetry-description-old") }
-fn telemetry_title() -> String { warp_i18n::t!("settings-privacy-telemetry-title") }
-fn telemetry_description() -> String { warp_i18n::t!("settings-privacy-telemetry-description") }
-fn telemetry_free_tier_note() -> String { warp_i18n::t!("settings-privacy-telemetry-free-tier-note") }
+fn safe_mode_title() -> String {
+    warp_i18n::t!("settings-privacy-safe-mode-title")
+}
+fn safe_mode_description() -> String {
+    warp_i18n::t!("settings-privacy-safe-mode-description")
+}
+fn user_secret_regex_title() -> String {
+    warp_i18n::t!("settings-privacy-custom-secret-title")
+}
+fn user_secret_regex_description() -> String {
+    warp_i18n::t!("settings-privacy-custom-secret-description")
+}
+fn telemetry_description_old() -> String {
+    warp_i18n::t!("settings-privacy-telemetry-description-old")
+}
+fn telemetry_title() -> String {
+    warp_i18n::t!("settings-privacy-telemetry-title")
+}
+fn telemetry_description() -> String {
+    warp_i18n::t!("settings-privacy-telemetry-description")
+}
+fn telemetry_free_tier_note() -> String {
+    warp_i18n::t!("settings-privacy-telemetry-free-tier-note")
+}
 const TELEMETRY_DOCS_URL: &str =
     "https://docs.warp.dev/support-and-community/privacy-and-security/privacy#what-telemetry-data-does-warp-collect-and-why";
 
-fn data_management_title() -> String { warp_i18n::t!("settings-privacy-data-management-title") }
-fn data_management_description() -> String { warp_i18n::t!("settings-privacy-data-management-description") }
-fn data_management_link_text() -> String { warp_i18n::t!("settings-privacy-data-management-link") }
+fn data_management_title() -> String {
+    warp_i18n::t!("settings-privacy-data-management-title")
+}
+fn data_management_description() -> String {
+    warp_i18n::t!("settings-privacy-data-management-description")
+}
+fn data_management_link_text() -> String {
+    warp_i18n::t!("settings-privacy-data-management-link")
+}
 
-fn privacy_policy_title() -> String { warp_i18n::t!("settings-privacy-policy-title") }
-fn privacy_policy_link_text() -> String { warp_i18n::t!("settings-privacy-policy-link") }
+fn privacy_policy_title() -> String {
+    warp_i18n::t!("settings-privacy-policy-title")
+}
+fn privacy_policy_link_text() -> String {
+    warp_i18n::t!("settings-privacy-policy-link")
+}
 
 pub fn data_management_url(custom_token: Option<&str>) -> String {
     match custom_token {
@@ -152,34 +178,38 @@ impl PrivacyPageView {
         });
 
         let add_regex_modal_view = ctx.add_typed_action_view(|ctx| {
-            Modal::new(Some(warp_i18n::t!("settings-privacy-add-regex-pattern")), add_regex_body, ctx)
-                .with_modal_style(UiComponentStyles {
-                    width: Some(600.),
-                    height: Some(400.),
-                    ..Default::default()
-                })
-                .with_header_style(UiComponentStyles {
-                    padding: Some(Coords {
-                        top: 24.,
-                        bottom: 0.,
-                        left: 24.,
-                        right: 24.,
-                    }),
-                    font_size: Some(16.),
-                    font_weight: Some(Weight::Bold),
-                    ..Default::default()
-                })
-                .with_body_style(UiComponentStyles {
-                    padding: Some(Coords {
-                        top: 0.,
-                        bottom: 24.,
-                        left: 24.,
-                        right: 24.,
-                    }),
-                    ..Default::default()
-                })
-                .with_background_opacity(100)
-                .with_dismiss_on_click()
+            Modal::new(
+                Some(warp_i18n::t!("settings-privacy-add-regex-pattern")),
+                add_regex_body,
+                ctx,
+            )
+            .with_modal_style(UiComponentStyles {
+                width: Some(600.),
+                height: Some(400.),
+                ..Default::default()
+            })
+            .with_header_style(UiComponentStyles {
+                padding: Some(Coords {
+                    top: 24.,
+                    bottom: 0.,
+                    left: 24.,
+                    right: 24.,
+                }),
+                font_size: Some(16.),
+                font_weight: Some(Weight::Bold),
+                ..Default::default()
+            })
+            .with_body_style(UiComponentStyles {
+                padding: Some(Coords {
+                    top: 0.,
+                    bottom: 24.,
+                    left: 24.,
+                    right: 24.,
+                }),
+                ..Default::default()
+            })
+            .with_background_opacity(100)
+            .with_dismiss_on_click()
         });
         ctx.subscribe_to_view(&add_regex_modal_view, |me, _, event, ctx| {
             me.handle_modal_event(event, ctx);
@@ -232,7 +262,10 @@ impl PrivacyPageView {
         }
         widgets.push(Box::new(DataManagementWidget::default()));
         widgets.push(Box::new(PrivacyPolicyWidget::default()));
-        PageType::new_uncategorized(widgets, Some(warp_i18n::t_static!("settings-privacy-title")))
+        PageType::new_uncategorized(
+            widgets,
+            Some(warp_i18n::t_static!("settings-privacy-title")),
+        )
     }
 
     fn update_button_states(
@@ -1002,12 +1035,10 @@ impl SecretRedactionWidget {
                         .with_main_axis_size(MainAxisSize::Max)
                         .with_main_axis_alignment(MainAxisAlignment::SpaceBetween)
                         .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                        .with_child(
-                            self.render_section_title(
-                                warp_i18n::t!("settings-privacy-recommended-header"),
-                                appearance,
-                            ),
-                        )
+                        .with_child(self.render_section_title(
+                            warp_i18n::t!("settings-privacy-recommended-header"),
+                            appearance,
+                        ))
                         .with_child(
                             Container::new(
                                 ui_builder
@@ -1175,7 +1206,11 @@ impl SettingsWidget for SecretRedactionWidget {
                 .with_child(
                     Shrinkable::new(
                         1.0,
-                        render_sub_header(appearance, safe_mode_title(), Some(local_only_icon_state)),
+                        render_sub_header(
+                            appearance,
+                            safe_mode_title(),
+                            Some(local_only_icon_state),
+                        ),
                     )
                     .finish(),
                 )
@@ -1249,20 +1284,18 @@ impl SettingsWidget for SecretRedactionWidget {
                 .with_child(
                     Container::new(
                         ui_builder
-                            .paragraph(warp_i18n::t!("settings-privacy-secret-display-mode-description"))
+                            .paragraph(warp_i18n::t!(
+                                "settings-privacy-secret-display-mode-description"
+                            ))
                             .with_style(UiComponentStyles {
                                 font_color: Some(description_text_color),
-                                margin: Some(
-                                    Coords::default()
-                                        .top(4.)
-                                        .bottom(0.),
-                                ),
+                                margin: Some(Coords::default().top(4.).bottom(0.)),
                                 ..Default::default()
                             })
                             .build()
-                            .finish()
+                            .finish(),
                     )
-                    .finish()
+                    .finish(),
                 )
                 .finish();
 
@@ -1387,9 +1420,13 @@ impl AppAnalyticsWidget {
             let background_color = appearance.theme().accent();
 
             let badge = Container::new(
-                Text::new_inline(warp_i18n::t!("settings-privacy-zdr-label"), appearance.ui_font_family(), CONTENT_FONT_SIZE - 2.)
-                    .with_color(theme.active_ui_text_color().into())
-                    .finish(),
+                Text::new_inline(
+                    warp_i18n::t!("settings-privacy-zdr-label"),
+                    appearance.ui_font_family(),
+                    CONTENT_FONT_SIZE - 2.,
+                )
+                .with_color(theme.active_ui_text_color().into())
+                .finish(),
             )
             .with_background(background_color)
             .with_corner_radius(CornerRadius::with_all(Radius::Pixels(3.)))
@@ -1399,9 +1436,7 @@ impl AppAnalyticsWidget {
 
             let mut stack = Stack::new().with_child(badge);
             if is_hovered {
-                let tooltip = ui_builder.tool_tip(
-                    warp_i18n::t!("settings-privacy-zdr-tooltip"),
-                );
+                let tooltip = ui_builder.tool_tip(warp_i18n::t!("settings-privacy-zdr-tooltip"));
                 stack.add_positioned_child(
                     tooltip.build().finish(),
                     OffsetPositioning::offset_from_parent(
@@ -1638,8 +1673,7 @@ impl SettingsWidget for CrashReportsWidget {
             .with_child(
                 ui_builder
                     .paragraph(
-                        warp_i18n::t!("settings-privacy-crash-reports-description")
-                            .to_owned(),
+                        warp_i18n::t!("settings-privacy-crash-reports-description").to_owned(),
                     )
                     .with_style(UiComponentStyles {
                         font_color: Some(

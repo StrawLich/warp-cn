@@ -274,7 +274,9 @@ impl From<ServerCardStatus> for ServerCardOptions {
                     indicator_type: StatusElementTypes::Circle,
                     color: StatusColor::Yellow,
                 }),
-                status_line: Some(warp_i18n::t!("settings-mcp-card-status-authenticating").to_string()),
+                status_line: Some(
+                    warp_i18n::t!("settings-mcp-card-status-authenticating").to_string(),
+                ),
                 background: Background::Filled,
                 full_card_clickable: false,
             },
@@ -314,7 +316,9 @@ impl From<ServerCardStatus> for ServerCardOptions {
                     indicator_type: StatusElementTypes::Circle,
                     color: StatusColor::Neutral,
                 }),
-                status_line: Some(warp_i18n::t!("settings-mcp-card-status-shutting-down").to_string()),
+                status_line: Some(
+                    warp_i18n::t!("settings-mcp-card-status-shutting-down").to_string(),
+                ),
                 background: Background::Filled,
                 full_card_clickable: false,
             },
@@ -829,7 +833,9 @@ impl ServerCardView {
                     ButtonVariant::Secondary,
                     self.mouse_handles.view_logs_button.clone(),
                 )
-                .with_centered_text_label(warp_i18n::t!("settings-mcp-card-button-view-logs").to_string())
+                .with_centered_text_label(
+                    warp_i18n::t!("settings-mcp-card-button-view-logs").to_string(),
+                )
                 .build()
                 .on_click(move |ctx, _, _| {
                     ctx.dispatch_typed_action(ServerCardAction::ViewLogs(item_id))
@@ -845,7 +851,9 @@ impl ServerCardView {
                     ButtonVariant::Accent,
                     self.mouse_handles.edit_config_button.clone(),
                 )
-                .with_centered_text_label(warp_i18n::t!("settings-mcp-card-button-edit-config").to_string())
+                .with_centered_text_label(
+                    warp_i18n::t!("settings-mcp-card-button-edit-config").to_string(),
+                )
                 .build()
                 .on_click(move |ctx, _, _| {
                     ctx.dispatch_typed_action(ServerCardAction::Edit(item_id));
@@ -861,7 +869,9 @@ impl ServerCardView {
                     ButtonVariant::Accent,
                     self.mouse_handles.setup_button.clone(),
                 )
-                .with_centered_text_label(warp_i18n::t!("settings-mcp-card-button-set-up").to_string())
+                .with_centered_text_label(
+                    warp_i18n::t!("settings-mcp-card-button-set-up").to_string(),
+                )
                 .build()
                 .on_click(move |ctx, _, _| {
                     ctx.dispatch_typed_action(ServerCardAction::Install(item_id));

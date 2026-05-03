@@ -188,18 +188,12 @@ impl EnvironmentDisplayData {
     fn format_timestamp_text(&self) -> String {
         let last_edited_part = self.last_edited_ts.map(|ts| {
             let time = format_approx_duration_from_now_utc(ts.utc());
-            warp_i18n::t!(
-                "settings-environments-card-last-edited",
-                time = time
-            )
+            warp_i18n::t!("settings-environments-card-last-edited", time = time)
         });
         let last_used_part = match self.last_used_ts {
             Some(ts) => {
                 let time = format_approx_duration_from_now_utc(ts.utc());
-                warp_i18n::t!(
-                    "settings-environments-card-last-used",
-                    time = time
-                )
+                warp_i18n::t!("settings-environments-card-last-used", time = time)
             }
             None => warp_i18n::t!("settings-environments-card-last-used-never"),
         };
@@ -1487,9 +1481,7 @@ impl EnvironmentsPageWidget {
                 badge: Some(warp_i18n::t_static!(
                     "settings-environments-empty-quick-setup-badge"
                 )),
-                subtitle: warp_i18n::t_static!(
-                    "settings-environments-empty-quick-setup-subtitle"
-                ),
+                subtitle: warp_i18n::t_static!("settings-environments-empty-quick-setup-subtitle"),
                 action_button: github_button,
                 compact_action_button: github_button_compact,
                 icon_size,
@@ -1502,9 +1494,7 @@ impl EnvironmentsPageWidget {
                 icon: Icon::Terminal,
                 title: warp_i18n::t_static!("settings-environments-empty-use-agent-title"),
                 badge: None,
-                subtitle: warp_i18n::t_static!(
-                    "settings-environments-empty-use-agent-subtitle"
-                ),
+                subtitle: warp_i18n::t_static!("settings-environments-empty-use-agent-subtitle"),
                 action_button: local_repos_button,
                 compact_action_button: local_repos_button_compact,
                 icon_size,
@@ -1802,12 +1792,12 @@ impl EnvironmentsPageWidget {
                     warp_i18n::t!("settings-environments-card-env-id-prefix"),
                     env_id_str.clone()
                 ))
-                    .with_font_size(appearance.ui_font_size() * 0.9)
-                    .with_text_color(blended_colors::text_sub(theme, theme.surface_1()))
-                    .with_icon_size(12.)
-                    .with_mouse_state(copy_button_mouse_state.clone())
-                    .with_last_copied_at(last_copied_at.as_ref())
-                    .with_copy_button_placement(CopyButtonPlacement::NextToText),
+                .with_font_size(appearance.ui_font_size() * 0.9)
+                .with_text_color(blended_colors::text_sub(theme, theme.surface_1()))
+                .with_icon_size(12.)
+                .with_mouse_state(copy_button_mouse_state.clone())
+                .with_last_copied_at(last_copied_at.as_ref())
+                .with_copy_button_placement(CopyButtonPlacement::NextToText),
                 move |ctx| {
                     ctx.dispatch_typed_action(EnvironmentsPageAction::CopyEnvId(
                         env_id,

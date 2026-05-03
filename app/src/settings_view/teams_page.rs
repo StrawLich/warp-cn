@@ -179,7 +179,9 @@ fn delinquent_admin_self_serve_line_2_link_text() -> String {
 }
 fn delinquent_admin_self_serve_line_2_suffix_text() -> String {
     let mut s = String::from(" ");
-    s.push_str(&warp_i18n::t!("settings-teams-delinquent-admin-self-serve-line2-suffix"));
+    s.push_str(&warp_i18n::t!(
+        "settings-teams-delinquent-admin-self-serve-line2-suffix"
+    ));
     s
 }
 
@@ -783,7 +785,10 @@ impl TeamsPageView {
             .to_string();
         let rename_team_editor = ctx.add_typed_action_view(|ctx| {
             let mut input = ClickableTextInput::new(team_name, ctx);
-            input.set_placeholder_text(warp_i18n::t!("settings-teams-new-team-name-placeholder"), ctx);
+            input.set_placeholder_text(
+                warp_i18n::t!("settings-teams-new-team-name-placeholder"),
+                ctx,
+            );
             input
         });
         ctx.subscribe_to_view(&rename_team_editor, |me, _, event, ctx| {
@@ -927,7 +932,11 @@ impl TeamsPageView {
             }
             UserWorkspacesEvent::EmailInviteRejected(err) => {
                 self.update_team_members_state(ctx);
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-send-invite"), Some(err), ctx)
+                self.show_error(
+                    warp_i18n::t!("settings-teams-toast-failed-send-invite"),
+                    Some(err),
+                    ctx,
+                )
             }
             UserWorkspacesEvent::TeamsChanged => {
                 self.update_team_members_state(ctx);
@@ -940,25 +949,43 @@ impl TeamsPageView {
                 ctx.emit(TeamsPageViewEvent::TeamsChanged);
             }
             UserWorkspacesEvent::ToggleInviteLinksSuccess => {
-                self.show_success(warp_i18n::t!("settings-teams-toast-toggled-invite-links"), ctx);
+                self.show_success(
+                    warp_i18n::t!("settings-teams-toast-toggled-invite-links"),
+                    ctx,
+                );
                 ctx.notify();
             }
             UserWorkspacesEvent::ToggleInviteLinksRejected(err) => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-toggle-invite-links"), Some(err), ctx);
+                self.show_error(
+                    warp_i18n::t!("settings-teams-toast-failed-toggle-invite-links"),
+                    Some(err),
+                    ctx,
+                );
             }
             UserWorkspacesEvent::ResetInviteLinks => {
-                self.show_success(warp_i18n::t!("settings-teams-toast-reset-invite-links"), ctx);
+                self.show_success(
+                    warp_i18n::t!("settings-teams-toast-reset-invite-links"),
+                    ctx,
+                );
                 ctx.notify();
             }
             UserWorkspacesEvent::ResetInviteLinksRejected(err) => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-reset-invite-links"), Some(err), ctx);
+                self.show_error(
+                    warp_i18n::t!("settings-teams-toast-failed-reset-invite-links"),
+                    Some(err),
+                    ctx,
+                );
             }
             UserWorkspacesEvent::DeleteTeamInvite => {
                 self.update_team_members_state(ctx);
                 self.show_success(warp_i18n::t!("settings-teams-toast-deleted-invite"), ctx);
             }
             UserWorkspacesEvent::DeleteTeamInviteRejected(err) => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-delete-invite"), Some(err), ctx);
+                self.show_error(
+                    warp_i18n::t!("settings-teams-toast-failed-delete-invite"),
+                    Some(err),
+                    ctx,
+                );
             }
             UserWorkspacesEvent::AddDomainRestrictionsSuccess => {
                 self.approve_domains_block_editor
@@ -967,15 +994,19 @@ impl TeamsPageView {
                     });
                 self.update_approved_domains_state(ctx);
             }
-            UserWorkspacesEvent::AddDomainRestrictionsRejected(err) => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-add-domain-restriction"), Some(err), ctx)
-            }
+            UserWorkspacesEvent::AddDomainRestrictionsRejected(err) => self.show_error(
+                warp_i18n::t!("settings-teams-toast-failed-add-domain-restriction"),
+                Some(err),
+                ctx,
+            ),
             UserWorkspacesEvent::DeleteDomainRestrictionSuccess => {
                 self.update_approved_domains_state(ctx);
             }
-            UserWorkspacesEvent::DeleteDomainRestrictionRejected(err) => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-delete-domain-restriction"), Some(err), ctx)
-            }
+            UserWorkspacesEvent::DeleteDomainRestrictionRejected(err) => self.show_error(
+                warp_i18n::t!("settings-teams-toast-failed-delete-domain-restriction"),
+                Some(err),
+                ctx,
+            ),
             UserWorkspacesEvent::GenerateUpgradeLink(upgrade_link) => {
                 ctx.open_url(upgrade_link);
             }
@@ -993,11 +1024,18 @@ impl TeamsPageView {
                 ctx,
             ),
             UserWorkspacesEvent::ToggleTeamDiscoverabilitySuccess => {
-                self.show_success(warp_i18n::t!("settings-teams-toast-toggled-team-discoverability"), ctx);
+                self.show_success(
+                    warp_i18n::t!("settings-teams-toast-toggled-team-discoverability"),
+                    ctx,
+                );
                 ctx.notify();
             }
             UserWorkspacesEvent::ToggleTeamDiscoverabilityRejected(err) => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-toggle-team-discoverability"), Some(err), ctx);
+                self.show_error(
+                    warp_i18n::t!("settings-teams-toast-failed-toggle-team-discoverability"),
+                    Some(err),
+                    ctx,
+                );
             }
             UserWorkspacesEvent::JoinTeamWithTeamDiscoverySuccess => {
                 // Force refresh of Warp Drive objects after joining a team
@@ -1005,19 +1043,24 @@ impl TeamsPageView {
                     update_manager.refresh_updated_objects(ctx);
                 });
 
-                let message = self
-                    .user_workspaces
-                    .as_ref(ctx)
-                    .current_team()
-                    .map_or_else(
-                        || warp_i18n::t!("settings-teams-toast-joined-team"),
-                        |team| warp_i18n::t!("settings-teams-toast-joined-team-named", team = team.name.clone()),
-                    );
+                let message = self.user_workspaces.as_ref(ctx).current_team().map_or_else(
+                    || warp_i18n::t!("settings-teams-toast-joined-team"),
+                    |team| {
+                        warp_i18n::t!(
+                            "settings-teams-toast-joined-team-named",
+                            team = team.name.clone()
+                        )
+                    },
+                );
                 self.show_success(message, ctx);
                 ctx.notify();
             }
             UserWorkspacesEvent::JoinTeamWithTeamDiscoveryRejected(err) => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-join-team"), Some(err), ctx);
+                self.show_error(
+                    warp_i18n::t!("settings-teams-toast-failed-join-team"),
+                    Some(err),
+                    ctx,
+                );
             }
             UserWorkspacesEvent::FetchDiscoverableTeamsSuccess(teams) => {
                 self.discoverable_teams_states = teams
@@ -1031,18 +1074,32 @@ impl TeamsPageView {
                 log::error!("Failed to fetch discoverable teams: {e:?}");
             }
             UserWorkspacesEvent::TransferTeamOwnershipSuccess => {
-                self.show_success(warp_i18n::t!("settings-teams-toast-transferred-ownership"), ctx);
+                self.show_success(
+                    warp_i18n::t!("settings-teams-toast-transferred-ownership"),
+                    ctx,
+                );
                 ctx.notify();
             }
             UserWorkspacesEvent::TransferTeamOwnershipRejected(err) => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-transfer-ownership"), Some(err), ctx);
+                self.show_error(
+                    warp_i18n::t!("settings-teams-toast-failed-transfer-ownership"),
+                    Some(err),
+                    ctx,
+                );
             }
             UserWorkspacesEvent::SetTeamMemberRoleSuccess => {
                 self.update_team_members_state(ctx);
-                self.show_success(warp_i18n::t!("settings-teams-toast-updated-member-role"), ctx);
+                self.show_success(
+                    warp_i18n::t!("settings-teams-toast-updated-member-role"),
+                    ctx,
+                );
             }
             UserWorkspacesEvent::SetTeamMemberRoleRejected(err) => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-update-member-role"), Some(err), ctx);
+                self.show_error(
+                    warp_i18n::t!("settings-teams-toast-failed-update-member-role"),
+                    Some(err),
+                    ctx,
+                );
             }
             UserWorkspacesEvent::UpdateWorkspaceSettingsSuccess => {
                 // as of right now, this is only emitted on the billing & usage page
@@ -1093,7 +1150,11 @@ impl TeamsPageView {
     ) {
         match event {
             TeamUpdateManagerEvent::LeaveError => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-error-leaving-team"), None, ctx);
+                self.show_error(
+                    warp_i18n::t!("settings-teams-toast-error-leaving-team"),
+                    None,
+                    ctx,
+                );
             }
             TeamUpdateManagerEvent::LeaveSuccess => {
                 self.show_success(warp_i18n::t!("settings-teams-toast-left-team"), ctx);
@@ -1102,9 +1163,11 @@ impl TeamsPageView {
             TeamUpdateManagerEvent::RenameTeamSuccess => {
                 self.show_success(warp_i18n::t!("settings-teams-toast-renamed-team"), ctx)
             }
-            TeamUpdateManagerEvent::RenameTeamError => {
-                self.show_error(warp_i18n::t!("settings-teams-toast-failed-rename-team"), None, ctx)
-            }
+            TeamUpdateManagerEvent::RenameTeamError => self.show_error(
+                warp_i18n::t!("settings-teams-toast-failed-rename-team"),
+                None,
+                ctx,
+            ),
         }
     }
 
@@ -1375,7 +1438,11 @@ impl TeamsPageView {
     fn copy_invite_link(&mut self, link: &str, ctx: &mut ViewContext<Self>) {
         ctx.clipboard()
             .write(ClipboardContent::plain_text(link.to_string()));
-        self.show_toast(warp_i18n::t!("settings-teams-toast-link-copied"), ToastFlavor::Default, ctx);
+        self.show_toast(
+            warp_i18n::t!("settings-teams-toast-link-copied"),
+            ToastFlavor::Default,
+            ctx,
+        );
     }
 
     fn remove_user_from_team(
@@ -1509,7 +1576,10 @@ impl TeamsPageView {
         let message = if unique_emails.len() == 1 {
             warp_i18n::t!("settings-teams-toast-invite-on-the-way")
         } else {
-            warp_i18n::t!("settings-teams-toast-invites-on-the-way", count = unique_emails.len())
+            warp_i18n::t!(
+                "settings-teams-toast-invites-on-the-way",
+                count = unique_emails.len()
+            )
         };
         self.show_success(message, ctx);
         self.user_workspaces
@@ -1858,10 +1928,12 @@ impl TeamsWidget {
         .with_margin_right(horizontal_padding)
         .finish();
 
-        let member_pricing_header =
-            Container::new(self.render_subsection_header(warp_i18n::t!("settings-teams-section-team-members"), appearance))
-                .with_margin_bottom(8.)
-                .finish();
+        let member_pricing_header = Container::new(self.render_subsection_header(
+            warp_i18n::t!("settings-teams-section-team-members"),
+            appearance,
+        ))
+        .with_margin_bottom(8.)
+        .finish();
 
         let member_pricing_info =
             self.render_sub_text(additional_members_cost_money_msg, appearance, None);
@@ -2263,9 +2335,10 @@ impl TeamsWidget {
         if let Some(policy) = team.billing_metadata.tier.shared_notebooks_policy {
             if !policy.is_unlimited {
                 let mut shared_notebooks_column = Flex::column();
-                shared_notebooks_column.add_child(
-                    self.render_plan_usage_header(warp_i18n::t!("settings-teams-plan-shared-notebooks"), appearance),
-                );
+                shared_notebooks_column.add_child(self.render_plan_usage_header(
+                    warp_i18n::t!("settings-teams-plan-shared-notebooks"),
+                    appearance,
+                ));
                 let num_shared_notebooks = cloud_model
                     .active_notebooks_in_space(Space::Team { team_uid: team.uid }, app)
                     .count();
@@ -2288,9 +2361,10 @@ impl TeamsWidget {
         if let Some(policy) = team.billing_metadata.tier.shared_workflows_policy {
             if !policy.is_unlimited {
                 let mut shared_workflows_column = Flex::column();
-                shared_workflows_column.add_child(
-                    self.render_plan_usage_header(warp_i18n::t!("settings-teams-plan-shared-workflows"), appearance),
-                );
+                shared_workflows_column.add_child(self.render_plan_usage_header(
+                    warp_i18n::t!("settings-teams-plan-shared-workflows"),
+                    appearance,
+                ));
                 let num_shared_workflows = cloud_model
                     .active_workflows_in_space(Space::Team { team_uid: team.uid }, app)
                     .count();
@@ -2384,8 +2458,10 @@ impl TeamsWidget {
             .with_main_axis_alignment(MainAxisAlignment::SpaceBetween);
 
         // 1) "Invite by Link" subsection header
-        invite_by_link_header_row
-            .add_child(self.render_subsection_header(warp_i18n::t!("settings-teams-section-invite-by-link"), appearance));
+        invite_by_link_header_row.add_child(self.render_subsection_header(
+            warp_i18n::t!("settings-teams-section-invite-by-link"),
+            appearance,
+        ));
 
         // 1.1) Toggle to the right of header only renders if user is admin
         if has_admin_permissions {
@@ -2481,10 +2557,13 @@ impl TeamsWidget {
 
         // "Invite by Email" subsection header
         section.add_child(
-            Container::new(self.render_subsection_header(warp_i18n::t!("settings-teams-section-invite-by-email"), appearance))
-                .with_padding_top(CONTENT_SEPARATION_PADDING)
-                .with_padding_bottom(8.)
-                .finish(),
+            Container::new(self.render_subsection_header(
+                warp_i18n::t!("settings-teams-section-invite-by-email"),
+                appearance,
+            ))
+            .with_padding_top(CONTENT_SEPARATION_PADDING)
+            .with_padding_bottom(8.)
+            .finish(),
         );
 
         match team.billing_metadata.delinquency_status {
@@ -2783,9 +2862,10 @@ impl TeamsWidget {
         // 1) "Team Members" header
         section.add_child(
             SavePosition::new(
-                Container::new(
-                    self.render_subsection_header(warp_i18n::t!("settings-teams-section-team-members-caps"), appearance),
-                )
+                Container::new(self.render_subsection_header(
+                    warp_i18n::t!("settings-teams-section-team-members-caps"),
+                    appearance,
+                ))
                 .with_padding_bottom(16.)
                 .finish(),
                 TEAM_MEMBERS_HEADER_POSITION_ID,
@@ -2816,9 +2896,12 @@ impl TeamsWidget {
 
         // 1) "Restrict by domain" header
         section.add_child(
-            Container::new(self.render_sub_header(warp_i18n::t!("settings-teams-section-restrict-by-domain"), appearance))
-                .with_padding_top(16.)
-                .finish(),
+            Container::new(self.render_sub_header(
+                warp_i18n::t!("settings-teams-section-restrict-by-domain"),
+                appearance,
+            ))
+            .with_padding_top(16.)
+            .finish(),
         );
 
         // 2) Instruction text for domain restrictions + Domain approval mechanism (input box + button)
@@ -2862,7 +2945,10 @@ impl TeamsWidget {
             {
                 section.add_child(
                     Container::new(
-                        self.render_error_sub_text(invalid_domains_instructions().into(), appearance),
+                        self.render_error_sub_text(
+                            invalid_domains_instructions().into(),
+                            appearance,
+                        ),
                     )
                     .with_padding_top(8.)
                     .finish(),
@@ -2995,9 +3081,12 @@ impl TeamsWidget {
             .with_main_axis_size(MainAxisSize::Max)
             .with_main_axis_alignment(MainAxisAlignment::SpaceBetween);
         discoverable_header_row.add_child(
-            Container::new(self.render_sub_header(warp_i18n::t!("settings-teams-section-make-team-discoverable"), appearance))
-                .with_padding_top(CONTENT_SEPARATION_PADDING)
-                .finish(),
+            Container::new(self.render_sub_header(
+                warp_i18n::t!("settings-teams-section-make-team-discoverable"),
+                appearance,
+            ))
+            .with_padding_top(CONTENT_SEPARATION_PADDING)
+            .finish(),
         );
 
         // Toggle to the right of header
@@ -3027,8 +3116,10 @@ impl TeamsWidget {
 
         // Instruction text for toggle
         let domain = current_user_email.split('@').nth(1).unwrap_or("");
-        let team_discoverability_instructions =
-            warp_i18n::t!("settings-teams-allow-domain-find", domain = domain.to_string());
+        let team_discoverability_instructions = warp_i18n::t!(
+            "settings-teams-allow-domain-find",
+            domain = domain.to_string()
+        );
         section.add_child(
             Container::new(self.render_sub_text(
                 team_discoverability_instructions,
@@ -3429,7 +3520,10 @@ impl TeamsWidget {
                 );
                 (link, true)
             }
-            None => (warp_i18n::t!("settings-teams-failed-load-invite-link"), false),
+            None => (
+                warp_i18n::t!("settings-teams-failed-load-invite-link"),
+                false,
+            ),
         };
         let theme = appearance.theme();
 
@@ -3705,10 +3799,15 @@ impl TeamsWidget {
         let mut page = Flex::column();
 
         // Title, subtitle, and description
-        page.add_child(render_sub_header(appearance, warp_i18n::t!("settings-teams-title"), None));
-        page.add_child(
-            self.render_sub_header_with_subtext_color(appearance, warp_i18n::t!("settings-teams-section-create-a-team")),
-        );
+        page.add_child(render_sub_header(
+            appearance,
+            warp_i18n::t!("settings-teams-title"),
+            None,
+        ));
+        page.add_child(self.render_sub_header_with_subtext_color(
+            appearance,
+            warp_i18n::t!("settings-teams-section-create-a-team"),
+        ));
         page.add_child(
             Container::new(
                 self.render_description(create_team_description().to_string(), appearance),
@@ -3734,7 +3833,10 @@ impl TeamsWidget {
             .with_margin_left(-4.)
             .finish();
             let checkbox_row_text = if let Some(domain) = view.auth_state.user_email_domain() {
-                warp_i18n::t!("settings-teams-allow-domain-find", domain = domain.to_string())
+                warp_i18n::t!(
+                    "settings-teams-allow-domain-find",
+                    domain = domain.to_string()
+                )
             } else {
                 warp_i18n::t!("settings-teams-allow-same-domain-find")
             };
@@ -3852,13 +3954,11 @@ impl TeamsWidget {
 
         // Call to action
         single_team.add_child(
-            Container::new(
-                self.render_sub_text(
-                    warp_i18n::t!("settings-teams-join-and-collaborate"),
-                    appearance,
-                    None,
-                ),
-            )
+            Container::new(self.render_sub_text(
+                warp_i18n::t!("settings-teams-join-and-collaborate"),
+                appearance,
+                None,
+            ))
             .with_padding_top(12.)
             .with_padding_bottom(12.)
             .finish(),
@@ -4059,7 +4159,9 @@ impl TeamsWidget {
                     font_size: Some(14.),
                     ..Default::default()
                 })
-                .with_centered_text_label(warp_i18n::t!("settings-teams-contact-admin-request-access"))
+                .with_centered_text_label(warp_i18n::t!(
+                    "settings-teams-contact-admin-request-access"
+                ))
                 .disabled()
                 .build()
                 .finish()

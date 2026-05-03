@@ -26,8 +26,12 @@ use crate::{
     },
 };
 
-fn add_directory_label() -> String { warp_i18n::t!("settings-appearance-add-directory") }
-fn button_label() -> String { warp_i18n::t!("settings-appearance-add-directory-color") }
+fn add_directory_label() -> String {
+    warp_i18n::t!("settings-appearance-add-directory")
+}
+fn button_label() -> String {
+    warp_i18n::t!("settings-appearance-add-directory-color")
+}
 const MENU_WIDTH: f32 = 340.;
 
 /// A dropdown used by the Directory tab colors settings widget, with a button fallback

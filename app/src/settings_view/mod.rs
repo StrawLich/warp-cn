@@ -231,27 +231,67 @@ impl Display for SettingsSection {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SettingsSection::Account => write!(f, "{}", warp_i18n::t!("settings-section-account")),
-            SettingsSection::BillingAndUsage => write!(f, "{}", warp_i18n::t!("settings-section-billing-usage")),
+            SettingsSection::BillingAndUsage => {
+                write!(f, "{}", warp_i18n::t!("settings-section-billing-usage"))
+            }
             SettingsSection::Teams => write!(f, "{}", warp_i18n::t!("settings-section-teams")),
-            SettingsSection::Appearance => write!(f, "{}", warp_i18n::t!("settings-section-appearance")),
-            SettingsSection::Features => write!(f, "{}", warp_i18n::t!("settings-section-features")),
-            SettingsSection::Keybindings => write!(f, "{}", warp_i18n::t!("settings-section-keybindings")),
+            SettingsSection::Appearance => {
+                write!(f, "{}", warp_i18n::t!("settings-section-appearance"))
+            }
+            SettingsSection::Features => {
+                write!(f, "{}", warp_i18n::t!("settings-section-features"))
+            }
+            SettingsSection::Keybindings => {
+                write!(f, "{}", warp_i18n::t!("settings-section-keybindings"))
+            }
             SettingsSection::Warpify => write!(f, "{}", warp_i18n::t!("settings-section-warpify")),
-            SettingsSection::Referrals => write!(f, "{}", warp_i18n::t!("settings-section-referrals")),
-            SettingsSection::SharedBlocks => write!(f, "{}", warp_i18n::t!("settings-section-shared-blocks")),
-            SettingsSection::WarpDrive => write!(f, "{}", warp_i18n::t!("settings-section-warp-drive")),
-            SettingsSection::MCPServers => write!(f, "{}", warp_i18n::t!("settings-section-mcp-servers")),
+            SettingsSection::Referrals => {
+                write!(f, "{}", warp_i18n::t!("settings-section-referrals"))
+            }
+            SettingsSection::SharedBlocks => {
+                write!(f, "{}", warp_i18n::t!("settings-section-shared-blocks"))
+            }
+            SettingsSection::WarpDrive => {
+                write!(f, "{}", warp_i18n::t!("settings-section-warp-drive"))
+            }
+            SettingsSection::MCPServers => {
+                write!(f, "{}", warp_i18n::t!("settings-section-mcp-servers"))
+            }
             SettingsSection::Privacy => write!(f, "{}", warp_i18n::t!("settings-section-privacy")),
             SettingsSection::About => write!(f, "{}", warp_i18n::t!("settings-section-about")),
-            SettingsSection::WarpAgent => write!(f, "{}", warp_i18n::t!("settings-subpage-warp-agent")),
-            SettingsSection::AgentProfiles => write!(f, "{}", warp_i18n::t!("settings-subpage-agent-profiles")),
-            SettingsSection::AgentMCPServers => write!(f, "{}", warp_i18n::t!("settings-subpage-agent-mcp-servers")),
-            SettingsSection::Knowledge => write!(f, "{}", warp_i18n::t!("settings-subpage-knowledge")),
-            SettingsSection::ThirdPartyCLIAgents => write!(f, "{}", warp_i18n::t!("settings-subpage-third-party-cli-agents")),
-            SettingsSection::CodeIndexing => write!(f, "{}", warp_i18n::t!("settings-subpage-code-indexing")),
-            SettingsSection::EditorAndCodeReview => write!(f, "{}", warp_i18n::t!("settings-subpage-editor-code-review")),
-            SettingsSection::CloudEnvironments => write!(f, "{}", warp_i18n::t!("settings-subpage-cloud-environments")),
-            SettingsSection::OzCloudAPIKeys => write!(f, "{}", warp_i18n::t!("settings-subpage-oz-cloud-api-keys")),
+            SettingsSection::WarpAgent => {
+                write!(f, "{}", warp_i18n::t!("settings-subpage-warp-agent"))
+            }
+            SettingsSection::AgentProfiles => {
+                write!(f, "{}", warp_i18n::t!("settings-subpage-agent-profiles"))
+            }
+            SettingsSection::AgentMCPServers => {
+                write!(f, "{}", warp_i18n::t!("settings-subpage-agent-mcp-servers"))
+            }
+            SettingsSection::Knowledge => {
+                write!(f, "{}", warp_i18n::t!("settings-subpage-knowledge"))
+            }
+            SettingsSection::ThirdPartyCLIAgents => write!(
+                f,
+                "{}",
+                warp_i18n::t!("settings-subpage-third-party-cli-agents")
+            ),
+            SettingsSection::CodeIndexing => {
+                write!(f, "{}", warp_i18n::t!("settings-subpage-code-indexing"))
+            }
+            SettingsSection::EditorAndCodeReview => write!(
+                f,
+                "{}",
+                warp_i18n::t!("settings-subpage-editor-code-review")
+            ),
+            SettingsSection::CloudEnvironments => write!(
+                f,
+                "{}",
+                warp_i18n::t!("settings-subpage-cloud-environments")
+            ),
+            SettingsSection::OzCloudAPIKeys => {
+                write!(f, "{}", warp_i18n::t!("settings-subpage-oz-cloud-api-keys"))
+            }
             // AI and Code are internal backing-page identifiers; their Display
             // output is never shown directly, but fall back to debug formatting.
             SettingsSection::AI | SettingsSection::Code => write!(f, "{self:?}"),
@@ -671,10 +711,7 @@ impl<T: Action + Clone> ToggleSettingActionPair<T> {
 
         ToggleSettingActionPair {
             descriptions: SettingActionPairDescriptions {
-                enable: warp_i18n::t!(
-                    "settings-action-enable-suffix",
-                    suffix = description_suffix,
-                ),
+                enable: warp_i18n::t!("settings-action-enable-suffix", suffix = description_suffix,),
                 disable: warp_i18n::t!(
                     "settings-action-disable-suffix",
                     suffix = description_suffix,
@@ -2258,7 +2295,7 @@ impl SettingsView {
         Container::new(
             Align::new(
                 Flex::column()
-                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
                     .with_children([
                         Text::new(
                             warp_i18n::t!("settings-search-no-results"),
@@ -2280,7 +2317,7 @@ impl SettingsView {
             )
             .finish(),
         )
-            .with_uniform_margin(16.)
+        .with_uniform_margin(16.)
         .with_corner_radius(CornerRadius::with_all(Radius::Pixels(4.)))
         .with_background(internal_colors::fg_overlay_1(appearance.theme()))
         .finish()

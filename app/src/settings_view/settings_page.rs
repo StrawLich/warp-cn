@@ -563,11 +563,9 @@ pub fn render_info_icon<T: Clone + Action>(
         .ui_builder()
         .info_button_with_tooltip(
             13.,
-            additional_info
-                .tooltip_override_text
-                .unwrap_or_else(|| {
-                    warp_i18n::t!("settings-page-tooltip-default-learn-more").to_string()
-                }),
+            additional_info.tooltip_override_text.unwrap_or_else(|| {
+                warp_i18n::t!("settings-page-tooltip-default-learn-more").to_string()
+            }),
             additional_info.mouse_state.clone(),
         )
         .on_click(move |ctx, _, _| {

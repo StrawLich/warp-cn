@@ -75,7 +75,6 @@ use warpui::{
     AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle,
 };
 
-
 #[derive(Debug, Clone)]
 pub enum MCPServersListPageViewEvent {
     Add,
@@ -99,7 +98,6 @@ pub enum MCPServersListPageViewAction {
     Add,
     ToggleFileBasedMcp,
 }
-
 
 pub struct MCPServersListPageView {
     server_cards: HashMap<ServerCardItemId, ViewHandle<ServerCardView>>,
@@ -370,10 +368,9 @@ impl MCPServersListPageView {
         let server_card = ServerCardView::new(
             item_id,
             template.name.clone(),
-            template
-                .description
-                .clone()
-                .or_else(|| Some(warp_i18n::t!("settings-mcp-list-available-to-install").to_string())),
+            template.description.clone().or_else(|| {
+                Some(warp_i18n::t!("settings-mcp-list-available-to-install").to_string())
+            }),
             None, // Templates can never have tools
             None, // Templates cannot have an error
             title_chip_text.into_iter().collect(),
@@ -1285,10 +1282,10 @@ impl MCPServersListPageView {
                             team = name
                         )
                         .to_string(),
-                        None => warp_i18n::t!(
-                            "settings-mcp-list-section-shared-by-warp-and-others"
-                        )
-                        .to_string(),
+                        None => {
+                            warp_i18n::t!("settings-mcp-list-section-shared-by-warp-and-others")
+                                .to_string()
+                        }
                     };
 
                     page.add_child(self.render_server_cards_section(
@@ -1508,7 +1505,10 @@ impl MCPServersListPageView {
                         .with_child(
                             appearance
                                 .ui_builder()
-                                .wrappable_text(warp_i18n::t!("settings-mcp-list-empty-state"), true)
+                                .wrappable_text(
+                                    warp_i18n::t!("settings-mcp-list-empty-state"),
+                                    true,
+                                )
                                 .with_style(style::description_text(appearance))
                                 .build()
                                 .finish(),
@@ -1539,7 +1539,10 @@ impl MCPServersListPageView {
                         .with_child(
                             appearance
                                 .ui_builder()
-                                .wrappable_text(warp_i18n::t!("settings-mcp-list-no-search-results"), true)
+                                .wrappable_text(
+                                    warp_i18n::t!("settings-mcp-list-no-search-results"),
+                                    true,
+                                )
                                 .with_style(style::description_text(appearance))
                                 .build()
                                 .finish(),
@@ -1649,7 +1652,9 @@ impl MCPServersListPageView {
                     .templatable_mcp_server()
                     .description
                     .clone()
-                    .or_else(|| Some(warp_i18n::t!("settings-mcp-list-detected-from-config").to_string())),
+                    .or_else(|| {
+                        Some(warp_i18n::t!("settings-mcp-list-detected-from-config").to_string())
+                    }),
                 None, // tools only available when running
                 None, // no error when not yet started
                 title_chips,

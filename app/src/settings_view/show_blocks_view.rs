@@ -564,7 +564,8 @@ impl ShowBlocksView {
                 }
                 Err(_) => {
                     ctx.emit(ShowBlocksEvent::ShowToast {
-                        message: warp_i18n::t!("settings-shared-blocks-toast-unshare-failed").to_string(),
+                        message: warp_i18n::t!("settings-shared-blocks-toast-unshare-failed")
+                            .to_string(),
                         flavor: ToastFlavor::Error,
                     });
                     user_block.unshare_request_status = UnshareBlockRequestState::Failed;

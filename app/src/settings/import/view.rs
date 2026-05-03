@@ -995,13 +995,9 @@ impl View for SettingsImportView {
 
         if display_new_session_text {
             new_session_setting_text = Container::new(
-                Text::new(
-                    t!("settings-import-restart-hint"),
-                    font_family,
-                    font_size,
-                )
-                .with_color(font_color.into_solid())
-                .finish(),
+                Text::new(t!("settings-import-restart-hint"), font_family, font_size)
+                    .with_color(font_color.into_solid())
+                    .finish(),
             )
             .with_margin_bottom(14.)
             .with_horizontal_margin(DROPDOWN_HORIZONTAL_MARGIN)

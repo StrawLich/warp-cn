@@ -256,11 +256,14 @@ impl CodeSettingsPageView {
         });
 
         let manual_add_directory_button = ctx.add_typed_action_view(|_| {
-            ActionButton::new(warp_i18n::t!("settings-code-index-new-folder"), SecondaryTheme)
-                .with_icon(Icon::FindAll)
-                .on_click(|ctx| {
-                    ctx.dispatch_typed_action(CodeSettingsPageAction::ManualAddDirectory);
-                })
+            ActionButton::new(
+                warp_i18n::t!("settings-code-index-new-folder"),
+                SecondaryTheme,
+            )
+            .with_icon(Icon::FindAll)
+            .on_click(|ctx| {
+                ctx.dispatch_typed_action(CodeSettingsPageAction::ManualAddDirectory);
+            })
         });
 
         let code_page_widget = CodePageWidget {
@@ -300,8 +303,14 @@ impl CodeSettingsPageView {
                 Box::new(GlobalSearchToggleWidget::default()),
             ]);
             let categories = vec![
-                Category::new(warp_i18n::t_static!("settings-code-category-indexing"), codebase_indexing_widgets),
-                Category::new(warp_i18n::t_static!("settings-code-category-editor-review"), code_editor_review_widgets),
+                Category::new(
+                    warp_i18n::t_static!("settings-code-category-indexing"),
+                    codebase_indexing_widgets,
+                ),
+                Category::new(
+                    warp_i18n::t_static!("settings-code-category-editor-review"),
+                    code_editor_review_widgets,
+                ),
             ];
             PageType::new_categorized(categories, None)
         } else {
@@ -343,11 +352,14 @@ impl CodeSettingsPageView {
             // or the full categorized page when subpage is None.
             if let Some(subpage) = subpage {
                 let manual_add_directory_button = ctx.add_typed_action_view(|_| {
-                    ActionButton::new(warp_i18n::t!("settings-code-index-new-folder"), SecondaryTheme)
-                        .with_icon(Icon::FindAll)
-                        .on_click(|ctx| {
-                            ctx.dispatch_typed_action(CodeSettingsPageAction::ManualAddDirectory);
-                        })
+                    ActionButton::new(
+                        warp_i18n::t!("settings-code-index-new-folder"),
+                        SecondaryTheme,
+                    )
+                    .with_icon(Icon::FindAll)
+                    .on_click(|ctx| {
+                        ctx.dispatch_typed_action(CodeSettingsPageAction::ManualAddDirectory);
+                    })
                 });
                 let mut widgets: Vec<Box<dyn SettingsWidget<View = Self>>> =
                     vec![Box::new(CodeSubpageHeaderWidget {
@@ -392,11 +404,14 @@ impl CodeSettingsPageView {
     fn build_full_page(ctx: &mut ViewContext<Self>) -> PageType<Self> {
         if FeatureFlag::OpenWarpNewSettingsModes.is_enabled() {
             let manual_add_directory_button = ctx.add_typed_action_view(|_| {
-                ActionButton::new(warp_i18n::t!("settings-code-index-new-folder"), SecondaryTheme)
-                    .with_icon(Icon::FindAll)
-                    .on_click(|ctx| {
-                        ctx.dispatch_typed_action(CodeSettingsPageAction::ManualAddDirectory);
-                    })
+                ActionButton::new(
+                    warp_i18n::t!("settings-code-index-new-folder"),
+                    SecondaryTheme,
+                )
+                .with_icon(Icon::FindAll)
+                .on_click(|ctx| {
+                    ctx.dispatch_typed_action(CodeSettingsPageAction::ManualAddDirectory);
+                })
             });
             let code_page_widget = CodePageWidget {
                 switch_state: Default::default(),
@@ -424,17 +439,26 @@ impl CodeSettingsPageView {
                 Box::new(GlobalSearchToggleWidget::default()),
             ]);
             let categories = vec![
-                Category::new(warp_i18n::t_static!("settings-code-category-indexing"), codebase_indexing_widgets),
-                Category::new(warp_i18n::t_static!("settings-code-category-editor-review"), code_editor_review_widgets),
+                Category::new(
+                    warp_i18n::t_static!("settings-code-category-indexing"),
+                    codebase_indexing_widgets,
+                ),
+                Category::new(
+                    warp_i18n::t_static!("settings-code-category-editor-review"),
+                    code_editor_review_widgets,
+                ),
             ];
             PageType::new_categorized(categories, None)
         } else {
             let manual_add_directory_button = ctx.add_typed_action_view(|_| {
-                ActionButton::new(warp_i18n::t!("settings-code-index-new-folder"), SecondaryTheme)
-                    .with_icon(Icon::FindAll)
-                    .on_click(|ctx| {
-                        ctx.dispatch_typed_action(CodeSettingsPageAction::ManualAddDirectory);
-                    })
+                ActionButton::new(
+                    warp_i18n::t!("settings-code-index-new-folder"),
+                    SecondaryTheme,
+                )
+                .with_icon(Icon::FindAll)
+                .on_click(|ctx| {
+                    ctx.dispatch_typed_action(CodeSettingsPageAction::ManualAddDirectory);
+                })
             });
             let widgets: Vec<Box<dyn SettingsWidget<View = Self>>> =
                 vec![Box::new(CodePageWidget {
@@ -1076,9 +1100,9 @@ impl CodePageWidget {
             .check(UserWorkspaces::as_ref(app).is_codebase_context_enabled(app));
 
         let disabled_tooltip_text: Option<String> = match admin_setting {
-            AdminEnablementSetting::Enable => Some(
-                warp_i18n::t!("settings-code-indexing-workspace-enabled-admin").to_string(),
-            ),
+            AdminEnablementSetting::Enable => {
+                Some(warp_i18n::t!("settings-code-indexing-workspace-enabled-admin").to_string())
+            }
             AdminEnablementSetting::Disable => {
                 Some(warp_i18n::t!("settings-code-indexing-disabled-admin").to_string())
             }
@@ -1533,9 +1557,7 @@ impl CodePageWidget {
             )) = index_state.last_sync_result()
             {
                 (
-                    Cow::from(
-                        warp_i18n::t!("settings-code-status-codebase-too-large").to_string(),
-                    ),
+                    Cow::from(warp_i18n::t!("settings-code-status-codebase-too-large").to_string()),
                     theme.ui_warning_color(),
                     Icon::AlertTriangle,
                 )
@@ -2133,9 +2155,9 @@ impl SettingsWidget for CodebaseIndexingCategorizedWidget {
             .check(codebase_context_enabled);
 
         let disabled_tooltip_text: Option<String> = match admin_setting {
-            AdminEnablementSetting::Enable => Some(
-                warp_i18n::t!("settings-code-indexing-workspace-enabled-admin").to_string(),
-            ),
+            AdminEnablementSetting::Enable => {
+                Some(warp_i18n::t!("settings-code-indexing-workspace-enabled-admin").to_string())
+            }
             AdminEnablementSetting::Disable => {
                 Some(warp_i18n::t!("settings-code-indexing-disabled-admin").to_string())
             }

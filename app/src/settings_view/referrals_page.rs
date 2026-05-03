@@ -42,29 +42,49 @@ use warpui::{
 
 const HEADER_FONT_SIZE: f32 = 18.;
 const HEADER_MARGIN_BOTTOM: f32 = 32.;
-fn anonymous_user_header_text() -> String { warp_i18n::t!("settings-referrals-signup-header") }
+fn anonymous_user_header_text() -> String {
+    warp_i18n::t!("settings-referrals-signup-header")
+}
 
 const INVITE_FIELD_LABEL_BOTTOM_MARGIN: f32 = 8.;
 
 const LINK_BOTTOM_MARGIN: f32 = 12.;
 const LINK_TEXT_PADDING: f32 = 10.;
 const LINK_CORNER_RADIUS: Radius = Radius::Pixels(4.);
-fn link_error_text() -> String { warp_i18n::t!("settings-referrals-link-error") }
+fn link_error_text() -> String {
+    warp_i18n::t!("settings-referrals-link-error")
+}
 
 const BUTTON_WIDTH: f32 = 98.;
 const BUTTON_HEIGHT: f32 = 36.;
 const BUTTON_LEFT_MARGIN: f32 = 8.;
 const BUTTON_FONT_SIZE: f32 = 12.;
-fn link_button_text() -> String { warp_i18n::t!("settings-referrals-copy-link") }
-fn email_button_text() -> String { warp_i18n::t!("settings-referrals-send") }
-fn email_button_sending_text() -> String { warp_i18n::t!("settings-referrals-sending") }
-fn loading_text() -> String { warp_i18n::t!("settings-referrals-loading") }
+fn link_button_text() -> String {
+    warp_i18n::t!("settings-referrals-copy-link")
+}
+fn email_button_text() -> String {
+    warp_i18n::t!("settings-referrals-send")
+}
+fn email_button_sending_text() -> String {
+    warp_i18n::t!("settings-referrals-sending")
+}
+fn loading_text() -> String {
+    warp_i18n::t!("settings-referrals-loading")
+}
 
-fn link_copied_toast() -> String { warp_i18n::t!("settings-referrals-link-copied") }
-fn email_success_toast() -> String { warp_i18n::t!("settings-referrals-email-success") }
-fn email_failure_toast() -> String { warp_i18n::t!("settings-referrals-email-failure") }
+fn link_copied_toast() -> String {
+    warp_i18n::t!("settings-referrals-link-copied")
+}
+fn email_success_toast() -> String {
+    warp_i18n::t!("settings-referrals-email-success")
+}
+fn email_failure_toast() -> String {
+    warp_i18n::t!("settings-referrals-email-failure")
+}
 
-fn reward_intro() -> String { warp_i18n::t!("settings-referrals-reward-intro") }
+fn reward_intro() -> String {
+    warp_i18n::t!("settings-referrals-reward-intro")
+}
 const REWARD_INTRO_FONT_SIZE: f32 = 14.;
 const REWARD_SECTION_VERTICAL_SPACING: f32 = 24.;
 
@@ -86,8 +106,12 @@ const METER_TOP_MARGIN: f32 = 16.;
 const METER_RIGHT_MARGIN: f32 = 12.;
 
 const CLAIMED_REFERRALS_LABEL_HORIZONTAL_SPACING: f32 = 4.;
-fn claimed_referrals_count_label_singular() -> String { warp_i18n::t!("settings-referrals-current-referral") }
-fn claimed_referrals_count_label_plural() -> String { warp_i18n::t!("settings-referrals-current-referrals") }
+fn claimed_referrals_count_label_singular() -> String {
+    warp_i18n::t!("settings-referrals-current-referral")
+}
+fn claimed_referrals_count_label_plural() -> String {
+    warp_i18n::t!("settings-referrals-current-referrals")
+}
 const CLAIMED_REFERRALS_LABEL_WIDTH: f32 = 52.;
 const CLAIMED_REFERRALS_LABEL_FONT_SIZE: f32 = 14.;
 const CLAIMED_REFERRALS_COUNT_FONT_SIZE: f32 = 48.;
@@ -95,10 +119,14 @@ const CLAIMED_REFERRAL_COUNT_LEFT_MARGIN: f32 = 40.;
 
 const CLAIMED_REFERRAL_CLIP: usize = 999;
 
-fn terms_link_text() -> String { warp_i18n::t!("settings-referrals-terms-link") }
+fn terms_link_text() -> String {
+    warp_i18n::t!("settings-referrals-terms-link")
+}
 const TERMS_URL: &str =
     "https://docs.warp.dev/support-and-community/community/refer-a-friend#referral-program-terms-and-conditions";
-fn terms_contact_text() -> String { warp_i18n::t!("settings-referrals-terms-contact") }
+fn terms_contact_text() -> String {
+    warp_i18n::t!("settings-referrals-terms-contact")
+}
 
 enum ApiState {
     Loading,
@@ -466,7 +494,10 @@ impl EmailValidationError {
         match self {
             EmailValidationError::Empty => warp_i18n::t!("settings-referrals-email-empty-error"),
             EmailValidationError::Invalid(invalid_email) => {
-                warp_i18n::t!("settings-referrals-email-invalid-error", email = invalid_email)
+                warp_i18n::t!(
+                    "settings-referrals-email-invalid-error",
+                    email = invalid_email
+                )
             }
         }
     }
@@ -628,12 +659,16 @@ impl ReferralsWidget {
     ) -> Box<dyn Element> {
         Flex::column()
             .with_child(
-                Container::new(self.render_label(warp_i18n::t!("settings-referrals-label-link"), appearance))
-                    .with_padding_top(PAGE_PADDING)
-                    .finish(),
+                Container::new(
+                    self.render_label(warp_i18n::t!("settings-referrals-label-link"), appearance),
+                )
+                .with_padding_top(PAGE_PADDING)
+                .finish(),
             )
             .with_child(self.render_link_row(view, appearance))
-            .with_child(self.render_label(warp_i18n::t!("settings-referrals-label-email"), appearance))
+            .with_child(
+                self.render_label(warp_i18n::t!("settings-referrals-label-email"), appearance),
+            )
             .with_child(self.render_email_row(view, appearance))
             .finish()
     }

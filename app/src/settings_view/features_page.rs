@@ -2761,18 +2761,42 @@ impl FeaturesPageView {
         }
 
         let categories = vec![
-            Category::new(warp_i18n::t_static!("settings-features-cat-general"), general_widgets),
-            Category::new(warp_i18n::t_static!("settings-features-cat-session"), session_widgets),
-            Category::new(warp_i18n::t_static!("settings-features-cat-keys"), keys_widgets),
-            Category::new(warp_i18n::t_static!("settings-features-cat-text-editing"), text_editing_widgets),
-            Category::new(warp_i18n::t_static!("settings-features-cat-terminal-input"), editor_widgets),
-            Category::new(warp_i18n::t_static!("settings-features-cat-terminal"), terminal_widgets),
-            Category::new(warp_i18n::t_static!("settings-features-cat-notifications"), notifications_widgets),
+            Category::new(
+                warp_i18n::t_static!("settings-features-cat-general"),
+                general_widgets,
+            ),
+            Category::new(
+                warp_i18n::t_static!("settings-features-cat-session"),
+                session_widgets,
+            ),
+            Category::new(
+                warp_i18n::t_static!("settings-features-cat-keys"),
+                keys_widgets,
+            ),
+            Category::new(
+                warp_i18n::t_static!("settings-features-cat-text-editing"),
+                text_editing_widgets,
+            ),
+            Category::new(
+                warp_i18n::t_static!("settings-features-cat-terminal-input"),
+                editor_widgets,
+            ),
+            Category::new(
+                warp_i18n::t_static!("settings-features-cat-terminal"),
+                terminal_widgets,
+            ),
+            Category::new(
+                warp_i18n::t_static!("settings-features-cat-notifications"),
+                notifications_widgets,
+            ),
             Category::new(
                 warp_i18n::t_static!("settings-features-cat-workflows"),
                 vec![Box::new(WorkflowsInCommandSearch::default())],
             ),
-            Category::new(warp_i18n::t_static!("settings-features-cat-system"), system_widgets),
+            Category::new(
+                warp_i18n::t_static!("settings-features-cat-system"),
+                system_widgets,
+            ),
         ];
 
         PageType::new_categorized(categories, None)
@@ -3305,8 +3329,12 @@ impl FeaturesPageView {
 
     fn new_tab_placement_dropdown_item_label(val: NewTabPlacement) -> &'static str {
         match val {
-            NewTabPlacement::AfterAllTabs => warp_i18n::t_static!("settings-features-tab-after-all"),
-            NewTabPlacement::AfterCurrentTab => warp_i18n::t_static!("settings-features-tab-after-current"),
+            NewTabPlacement::AfterAllTabs => {
+                warp_i18n::t_static!("settings-features-tab-after-all")
+            }
+            NewTabPlacement::AfterCurrentTab => {
+                warp_i18n::t_static!("settings-features-tab-after-current")
+            }
         }
     }
 
@@ -3839,7 +3867,9 @@ impl FeaturesPageView {
                         } else {
                             appearance
                                 .ui_builder()
-                                .paragraph(warp_i18n::t!("settings-features-click-set-hotkey").to_string())
+                                .paragraph(
+                                    warp_i18n::t!("settings-features-click-set-hotkey").to_string(),
+                                )
                                 .build()
                                 .finish()
                         })
@@ -3981,9 +4011,13 @@ impl FeaturesPageView {
                 }
 
                 Container::new(
-                    Text::new_inline(warp_i18n::t!("settings-features-change-keybinding"), appearance.ui_font_family(), 12.)
-                        .with_color(button_color)
-                        .finish(),
+                    Text::new_inline(
+                        warp_i18n::t!("settings-features-change-keybinding"),
+                        appearance.ui_font_family(),
+                        12.,
+                    )
+                    .with_color(button_color)
+                    .finish(),
                 )
                 .with_border(border)
                 .finish()
@@ -4803,7 +4837,10 @@ impl SettingsWidget for DefaultTerminalWidget {
         let default_terminal = DefaultTerminal::as_ref(app);
         if default_terminal.is_warp_default() {
             ui_builder
-                .wrappable_text(warp_i18n::t!("settings-features-warp-is-default-terminal"), true)
+                .wrappable_text(
+                    warp_i18n::t!("settings-features-warp-is-default-terminal"),
+                    true,
+                )
                 .with_style(UiComponentStyles {
                     font_color: Some(appearance.theme().disabled_ui_text_color().into()),
                     margin: Some(Coords::default().bottom(16.)),
@@ -7149,7 +7186,9 @@ impl SettingsWidget for WindowSystemWidget {
                 mouse_state: self.additional_info_link.clone(),
                 on_click_action: None,
                 secondary_text: None,
-                tooltip_override_text: Some(warp_i18n::t!("settings-features-wayland-tooltip").to_string()),
+                tooltip_override_text: Some(
+                    warp_i18n::t!("settings-features-wayland-tooltip").to_string(),
+                ),
             }),
             LocalOnlyIconState::for_setting(
                 ForceX11::storage_key(),
@@ -7270,4 +7309,3 @@ impl SettingsWidget for GraphicsBackendWidget {
         col.finish()
     }
 }
-

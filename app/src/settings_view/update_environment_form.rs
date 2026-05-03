@@ -32,8 +32,8 @@ use std::collections::HashMap;
 use url::Url;
 use warp_core::send_telemetry_from_ctx;
 use warp_editor::editor::NavigationKey;
-use warp_i18n::t;
 use warp_graphql::queries::user_github_info::UserGithubInfoResult;
+use warp_i18n::t;
 use warpui::{
     elements::{
         Border, ChildAnchor, ChildView, Clipped, ClippedScrollStateHandle, ClippedScrollable,
@@ -717,14 +717,14 @@ impl UpdateEnvironmentForm {
         // Update button text based on mode when header is hidden
         if !show_header {
             let button_text: String = match &self.mode {
-                EnvironmentFormMode::Create => warp_i18n::t!(
-                    "settings-environments-update-form-button-create-environment"
-                )
-                .to_string(),
-                EnvironmentFormMode::Edit { .. } => warp_i18n::t!(
-                    "settings-environments-update-form-button-save-environment"
-                )
-                .to_string(),
+                EnvironmentFormMode::Create => {
+                    warp_i18n::t!("settings-environments-update-form-button-create-environment")
+                        .to_string()
+                }
+                EnvironmentFormMode::Edit { .. } => {
+                    warp_i18n::t!("settings-environments-update-form-button-save-environment")
+                        .to_string()
+                }
             };
             self.submit_button.update(ctx, |button, ctx| {
                 button.set_label(button_text, ctx);
@@ -779,7 +779,8 @@ impl UpdateEnvironmentForm {
                 // Update button text for Create mode
                 self.submit_button.update(ctx, |button, ctx| {
                     button.set_label(
-                        warp_i18n::t!("settings-environments-update-form-button-create").to_string(),
+                        warp_i18n::t!("settings-environments-update-form-button-create")
+                            .to_string(),
                         ctx,
                     );
                 });
@@ -1582,8 +1583,8 @@ impl UpdateEnvironmentForm {
                         font_family,
                         font_size,
                     )
-                        .with_color(color.into())
-                        .finish()
+                    .with_color(color.into())
+                    .finish()
                 },
             )
             .with_cursor(Cursor::PointingHand)
@@ -1617,9 +1618,9 @@ impl UpdateEnvironmentForm {
         }
 
         Some(render_warning_box(
-            WarningBoxConfig::new(
-                warp_i18n::t!("settings-environments-update-form-personal-warning"),
-            )
+            WarningBoxConfig::new(warp_i18n::t!(
+                "settings-environments-update-form-personal-warning"
+            ))
             .with_width(DROPDOWN_MAX_WIDTH),
             appearance,
         ))
@@ -3252,9 +3253,9 @@ impl UpdateEnvironmentForm {
                     },
                 );
                 Some(render_warning_box(
-                    WarningBoxConfig::new(
-                        warp_i18n::t!("settings-environments-update-form-grant-github-access"),
-                    )
+                    WarningBoxConfig::new(warp_i18n::t!(
+                        "settings-environments-update-form-grant-github-access"
+                    ))
                     .with_width(DROPDOWN_MAX_WIDTH)
                     .with_button(button),
                     appearance,
@@ -3287,9 +3288,9 @@ impl UpdateEnvironmentForm {
         );
 
         render_warning_box(
-            WarningBoxConfig::new(
-                warp_i18n::t!("settings-environments-update-form-no-good-match"),
-            )
+            WarningBoxConfig::new(warp_i18n::t!(
+                "settings-environments-update-form-no-good-match"
+            ))
             .with_description(reason)
             .with_icon(Icon::AlertTriangle)
             .with_width(DROPDOWN_MAX_WIDTH)

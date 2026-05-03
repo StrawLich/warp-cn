@@ -125,7 +125,10 @@ impl WarpifyPageView {
         let add_added_commands_editor = ctx.add_typed_action_view(|ctx| {
             let mut input =
                 SubmittableTextInput::new(ctx).validate_on_edit(|regex| Regex::new(regex).is_ok());
-            input.set_placeholder_text(warp_i18n::t!("settings-warpify-command-placeholder").as_str(), ctx);
+            input.set_placeholder_text(
+                warp_i18n::t!("settings-warpify-command-placeholder").as_str(),
+                ctx,
+            );
             input
         });
 
@@ -136,7 +139,10 @@ impl WarpifyPageView {
 
         let add_denylisted_commands_editor = ctx.add_typed_action_view(|ctx| {
             let mut input = SubmittableTextInput::new(ctx);
-            input.set_placeholder_text(warp_i18n::t!("settings-warpify-command-placeholder").as_str(), ctx);
+            input.set_placeholder_text(
+                warp_i18n::t!("settings-warpify-command-placeholder").as_str(),
+                ctx,
+            );
             input
         });
 
@@ -147,7 +153,10 @@ impl WarpifyPageView {
 
         let add_denylisted_ssh_editor = ctx.add_typed_action_view(|ctx| {
             let mut input = SubmittableTextInput::new(ctx);
-            input.set_placeholder_text(warp_i18n::t!("settings-warpify-host-placeholder").as_str(), ctx);
+            input.set_placeholder_text(
+                warp_i18n::t!("settings-warpify-host-placeholder").as_str(),
+                ctx,
+            );
             input
         });
 
@@ -177,8 +186,11 @@ impl WarpifyPageView {
     fn build_page(ctx: &mut ViewContext<Self>) -> PageType<Self> {
         let mut categories = vec![
             Category::new("", vec![Box::new(TitleWidget::default())]),
-            Category::new(warp_i18n::t_static!("settings-warpify-subshells"), vec![Box::new(SubshellsWidget::default())])
-                .with_subtitle(warp_i18n::t_static!("settings-warpify-subshells-subtitle")),
+            Category::new(
+                warp_i18n::t_static!("settings-warpify-subshells"),
+                vec![Box::new(SubshellsWidget::default())],
+            )
+            .with_subtitle(warp_i18n::t_static!("settings-warpify-subshells-subtitle")),
         ];
 
         let warpify_settings = WarpifySettings::as_ref(ctx);
@@ -188,8 +200,11 @@ impl WarpifyPageView {
                 .is_supported_on_current_platform()
         {
             categories.push(
-                Category::new(warp_i18n::t_static!("settings-warpify-ssh"), vec![Box::new(SSHWidget::default())])
-                    .with_subtitle(warp_i18n::t_static!("settings-warpify-ssh-subtitle")),
+                Category::new(
+                    warp_i18n::t_static!("settings-warpify-ssh"),
+                    vec![Box::new(SSHWidget::default())],
+                )
+                .with_subtitle(warp_i18n::t_static!("settings-warpify-ssh-subtitle")),
             );
         }
         PageType::new_categorized(categories, None)
@@ -535,9 +550,7 @@ struct TitleWidget {
 impl TitleWidget {
     fn render_top_of_page(&self, appearance: &Appearance, _app: &AppContext) -> Box<dyn Element> {
         let warpify_description = vec![
-            FormattedTextFragment::plain_text(
-                warp_i18n::t!("settings-warpify-description"),
-            ),
+            FormattedTextFragment::plain_text(warp_i18n::t!("settings-warpify-description")),
             FormattedTextFragment::hyperlink(
                 warp_i18n::t!("settings-warpify-learn-more"),
                 "https://docs.warp.dev/terminal/warpify/subshells",
@@ -559,7 +572,11 @@ impl TitleWidget {
         .finish();
 
         Flex::column()
-            .with_child(render_page_title(warp_i18n::t!("settings-warpify-title").as_str(), HEADER_FONT_SIZE, appearance))
+            .with_child(render_page_title(
+                warp_i18n::t!("settings-warpify-title").as_str(),
+                HEADER_FONT_SIZE,
+                appearance,
+            ))
             .with_child(warpify_description)
             .finish()
     }

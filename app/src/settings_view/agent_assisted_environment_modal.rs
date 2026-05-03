@@ -104,12 +104,10 @@ impl AgentAssistedEnvironmentModal {
                 warp_i18n::t!("settings-environments-agent-assisted-modal-add-repo"),
                 SecondaryTheme,
             )
-                .with_size(ButtonSize::Small)
-                .on_click(|ctx| {
-                    ctx.dispatch_typed_action(
-                        AgentAssistedEnvironmentModalAction::OpenDirectoryPicker,
-                    );
-                })
+            .with_size(ButtonSize::Small)
+            .on_click(|ctx| {
+                ctx.dispatch_typed_action(AgentAssistedEnvironmentModalAction::OpenDirectoryPicker);
+            })
         });
 
         let cancel_button = ctx.add_typed_action_view(|_ctx| {
@@ -452,9 +450,13 @@ impl AgentAssistedEnvironmentModal {
         if self.available_repos.is_empty() {
             let text: String = if cfg!(all(feature = "local_fs", not(target_family = "wasm"))) {
                 if self.available_repos_loading {
-                    warp_i18n::t!("settings-environments-agent-assisted-modal-loading-indexed-repos").to_string()
+                    warp_i18n::t!(
+                        "settings-environments-agent-assisted-modal-loading-indexed-repos"
+                    )
+                    .to_string()
                 } else {
-                    warp_i18n::t!("settings-environments-agent-assisted-modal-no-indexed-repos").to_string()
+                    warp_i18n::t!("settings-environments-agent-assisted-modal-no-indexed-repos")
+                        .to_string()
                 }
             } else {
                 warp_i18n::t!("settings-environments-agent-assisted-modal-unavailable").to_string()
@@ -632,9 +634,11 @@ impl AgentAssistedEnvironmentModal {
 
     fn render_dialog(&self, appearance: &Appearance, app: &AppContext) -> Box<dyn Element> {
         let description = if FeatureFlag::FullSourceCodeEmbedding.is_enabled() {
-            warp_i18n::t!("settings-environments-agent-assisted-modal-description-indexed").to_string()
+            warp_i18n::t!("settings-environments-agent-assisted-modal-description-indexed")
+                .to_string()
         } else {
-            warp_i18n::t!("settings-environments-agent-assisted-modal-description-default").to_string()
+            warp_i18n::t!("settings-environments-agent-assisted-modal-description-default")
+                .to_string()
         };
 
         let close_button = icon_button(

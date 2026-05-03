@@ -140,25 +140,35 @@ impl MCPServersEditPageView {
         });
 
         let reinstall_button = ctx.add_typed_action_view(|_| {
-            ActionButton::new(warp_i18n::t!("settings-mcp-edit-edit-variables"), PrimaryTheme).on_click(|ctx| {
+            ActionButton::new(
+                warp_i18n::t!("settings-mcp-edit-edit-variables"),
+                PrimaryTheme,
+            )
+            .on_click(|ctx| {
                 ctx.dispatch_typed_action(MCPServersEditPageViewAction::Reinstall);
             })
         });
 
         let delete_button = ctx.add_typed_action_view(|_| {
-            ActionButton::new(warp_i18n::t!("settings-mcp-edit-delete-mcp"), DangerSecondaryTheme)
-                .with_icon(Icon::Trash)
-                .on_click(|ctx| {
-                    ctx.dispatch_typed_action(MCPServersEditPageViewAction::Delete);
-                })
+            ActionButton::new(
+                warp_i18n::t!("settings-mcp-edit-delete-mcp"),
+                DangerSecondaryTheme,
+            )
+            .with_icon(Icon::Trash)
+            .on_click(|ctx| {
+                ctx.dispatch_typed_action(MCPServersEditPageViewAction::Delete);
+            })
         });
 
         let unshare_button = ctx.add_typed_action_view(|_| {
-            ActionButton::new(warp_i18n::t!("settings-mcp-edit-remove-from-team"), DangerNakedTheme)
-                .with_icon(Icon::MinusCircle)
-                .on_click(|ctx| {
-                    ctx.dispatch_typed_action(MCPServersEditPageViewAction::Unshare);
-                })
+            ActionButton::new(
+                warp_i18n::t!("settings-mcp-edit-remove-from-team"),
+                DangerNakedTheme,
+            )
+            .with_icon(Icon::MinusCircle)
+            .on_click(|ctx| {
+                ctx.dispatch_typed_action(MCPServersEditPageViewAction::Unshare);
+            })
         });
 
         let json_editor = ctx.add_typed_action_view(|ctx| {
@@ -498,9 +508,9 @@ impl MCPServersEditPageView {
                             )
                             .finish(),
                         )
-                            .with_vertical_padding(10.)
-                            .with_horizontal_padding(16.)
-                            .finish(),
+                        .with_vertical_padding(10.)
+                        .with_horizontal_padding(16.)
+                        .finish(),
                     )
                     .with_background_color(border_color)
                     .finish(),
@@ -612,7 +622,9 @@ impl MCPServersEditPageView {
             let window_id = ctx.window_id();
             ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                 toast_stack.add_ephemeral_toast(
-                    DismissibleToast::error(warp_i18n::t!("settings-mcp-edit-error-no-server-specified").to_string()),
+                    DismissibleToast::error(
+                        warp_i18n::t!("settings-mcp-edit-error-no-server-specified").to_string(),
+                    ),
                     window_id,
                     ctx,
                 );
@@ -906,7 +918,10 @@ impl TypedActionView for MCPServersEditPageView {
                         let window_id = ctx.window_id();
                         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                             toast_stack.add_ephemeral_toast(
-                                DismissibleToast::error(warp_i18n::t!("settings-mcp-edit-error-no-server-specified").to_string()),
+                                DismissibleToast::error(
+                                    warp_i18n::t!("settings-mcp-edit-error-no-server-specified")
+                                        .to_string(),
+                                ),
                                 window_id,
                                 ctx,
                             );

@@ -233,11 +233,8 @@ impl UpdateModalBody {
                     .unwrap_or_else(Local::now);
                 let formatted_time = format_approx_duration_from_now(datetime);
                 (
-                    warp_i18n::t!(
-                        "settings-mcp-update-from",
-                        publisher = &*publisher_string
-                    )
-                    .to_string(),
+                    warp_i18n::t!("settings-mcp-update-from", publisher = &*publisher_string)
+                        .to_string(),
                     formatted_time.to_string(),
                 )
             }

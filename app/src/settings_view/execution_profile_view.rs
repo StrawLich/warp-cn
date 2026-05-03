@@ -150,9 +150,13 @@ impl View for ExecutionProfileView {
                     let mut model_flex = Flex::column();
                     model_flex.add_child(
                         Container::new(
-                            Text::new(warp_i18n::t!("settings-ai-models"), appearance.ui_font_family(), 10.)
-                                .with_color(appearance.theme().disabled_ui_text_color().into())
-                                .finish(),
+                            Text::new(
+                                warp_i18n::t!("settings-ai-models"),
+                                appearance.ui_font_family(),
+                                10.,
+                            )
+                            .with_color(appearance.theme().disabled_ui_text_color().into())
+                            .finish(),
                         )
                         .with_margin_bottom(8.)
                         .finish(),
@@ -196,11 +200,13 @@ impl View for ExecutionProfileView {
                         let mut permissions_column = Flex::column()
                             .with_child(
                                 Container::new(
-                                    Text::new(warp_i18n::t!("settings-ai-permissions"), appearance.ui_font_family(), 10.)
-                                        .with_color(
-                                            appearance.theme().disabled_ui_text_color().into(),
-                                        )
-                                        .finish(),
+                                    Text::new(
+                                        warp_i18n::t!("settings-ai-permissions"),
+                                        appearance.ui_font_family(),
+                                        10.,
+                                    )
+                                    .with_color(appearance.theme().disabled_ui_text_color().into())
+                                    .finish(),
                                 )
                                 .with_margin_bottom(8.)
                                 .finish(),
@@ -415,9 +421,13 @@ where
     let items_vec: Vec<String> = items.into_iter().map(|item| item.to_string()).collect();
     if items_vec.is_empty() {
         return Container::new(
-            Text::new(warp_i18n::t!("settings-ai-none"), appearance.ui_font_family(), 12.)
-                .with_color(appearance.theme().disabled_ui_text_color().into())
-                .finish(),
+            Text::new(
+                warp_i18n::t!("settings-ai-none"),
+                appearance.ui_font_family(),
+                12.,
+            )
+            .with_color(appearance.theme().disabled_ui_text_color().into())
+            .finish(),
         )
         .finish();
     }
@@ -719,9 +729,15 @@ fn render_computer_use_permission_line_with_icon(
 ) -> Box<dyn Element> {
     let permission_text = match permission {
         crate::ai::execution_profiles::ComputerUsePermission::Never
-        | crate::ai::execution_profiles::ComputerUsePermission::Unknown => warp_i18n::t!("settings-ai-never"),
-        crate::ai::execution_profiles::ComputerUsePermission::AlwaysAsk => warp_i18n::t!("settings-ai-always-ask"),
-        crate::ai::execution_profiles::ComputerUsePermission::AlwaysAllow => warp_i18n::t!("settings-ai-always-allow"),
+        | crate::ai::execution_profiles::ComputerUsePermission::Unknown => {
+            warp_i18n::t!("settings-ai-never")
+        }
+        crate::ai::execution_profiles::ComputerUsePermission::AlwaysAsk => {
+            warp_i18n::t!("settings-ai-always-ask")
+        }
+        crate::ai::execution_profiles::ComputerUsePermission::AlwaysAllow => {
+            warp_i18n::t!("settings-ai-always-allow")
+        }
     };
     render_permission_line_with_icon(icon, label, permission_text, appearance, is_ai_enabled)
 }
@@ -750,7 +766,11 @@ fn render_bool_permission_line_with_icon(
     appearance: &Appearance,
     is_ai_enabled: bool,
 ) -> Box<dyn Element> {
-    let permission_text = if enabled { warp_i18n::t!("settings-ai-on") } else { warp_i18n::t!("settings-ai-off") };
+    let permission_text = if enabled {
+        warp_i18n::t!("settings-ai-on")
+    } else {
+        warp_i18n::t!("settings-ai-off")
+    };
     render_permission_line_with_icon(icon, label, permission_text, appearance, is_ai_enabled)
 }
 

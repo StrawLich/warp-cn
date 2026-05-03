@@ -127,34 +127,38 @@ impl PlatformPageView {
 
         // Create the modal wrapper
         let create_api_key_modal_view = ctx.add_typed_action_view(|ctx| {
-            Modal::new(Some(warp_i18n::t!("settings-platform-new-api-key")), create_api_key_body, ctx)
-                .with_modal_style(UiComponentStyles {
-                    width: Some(MODAL_WIDTH),
-                    height: Some(MODAL_HEIGHT),
-                    ..Default::default()
-                })
-                .with_header_style(UiComponentStyles {
-                    padding: Some(Coords {
-                        top: 24.,
-                        bottom: 0.,
-                        left: 24.,
-                        right: 24.,
-                    }),
-                    font_size: Some(16.),
-                    font_weight: Some(warpui::fonts::Weight::Bold),
-                    ..Default::default()
-                })
-                .with_body_style(UiComponentStyles {
-                    padding: Some(Coords {
-                        top: 0.,
-                        bottom: 24.,
-                        left: 24.,
-                        right: 24.,
-                    }),
-                    ..Default::default()
-                })
-                .with_background_opacity(100)
-                .with_dismiss_on_click()
+            Modal::new(
+                Some(warp_i18n::t!("settings-platform-new-api-key")),
+                create_api_key_body,
+                ctx,
+            )
+            .with_modal_style(UiComponentStyles {
+                width: Some(MODAL_WIDTH),
+                height: Some(MODAL_HEIGHT),
+                ..Default::default()
+            })
+            .with_header_style(UiComponentStyles {
+                padding: Some(Coords {
+                    top: 24.,
+                    bottom: 0.,
+                    left: 24.,
+                    right: 24.,
+                }),
+                font_size: Some(16.),
+                font_weight: Some(warpui::fonts::Weight::Bold),
+                ..Default::default()
+            })
+            .with_body_style(UiComponentStyles {
+                padding: Some(Coords {
+                    top: 0.,
+                    bottom: 24.,
+                    left: 24.,
+                    right: 24.,
+                }),
+                ..Default::default()
+            })
+            .with_background_opacity(100)
+            .with_dismiss_on_click()
         });
         ctx.subscribe_to_view(&create_api_key_modal_view, |me, _, event, ctx| {
             me.handle_modal_event(event, ctx);
@@ -258,9 +262,9 @@ impl PlatformPageView {
                 me.expire_buttons.remove(uid);
                 let window_id = ctx.window_id();
                 crate::ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-                    let toast = crate::view_components::DismissibleToast::success(
-                        warp_i18n::t!("settings-platform-api-key-deleted"),
-                    );
+                    let toast = crate::view_components::DismissibleToast::success(warp_i18n::t!(
+                        "settings-platform-api-key-deleted"
+                    ));
                     toast_stack.add_ephemeral_toast(toast, window_id, ctx);
                 });
                 ctx.notify();
@@ -383,7 +387,10 @@ impl PlatformPageWidget {
                 warp_i18n::t!("settings-platform-create-api-key-help-line1"),
                 warp_i18n::t!("settings-platform-create-api-key-help-line2-prefix"),
             )),
-            FormattedTextFragment::hyperlink(&warp_i18n::t!("settings-platform-documentation-link"), API_KEY_DOCS_URL),
+            FormattedTextFragment::hyperlink(
+                &warp_i18n::t!("settings-platform-documentation-link"),
+                API_KEY_DOCS_URL,
+            ),
         ];
 
         let text_element = FormattedTextElement::new(
@@ -417,10 +424,14 @@ impl PlatformPageWidget {
             Flex::row()
                 .with_cross_axis_alignment(CrossAxisAlignment::Center)
                 .with_child(
-                    Text::new_inline(warp_i18n::t!("settings-subpage-oz-cloud-api-keys"), appearance.ui_font_family(), 16.)
-                        .with_style(Properties::default().weight(Weight::Bold))
-                        .with_color(appearance.theme().active_ui_text_color().into())
-                        .finish(),
+                    Text::new_inline(
+                        warp_i18n::t!("settings-subpage-oz-cloud-api-keys"),
+                        appearance.ui_font_family(),
+                        16.,
+                    )
+                    .with_style(Properties::default().weight(Weight::Bold))
+                    .with_color(appearance.theme().active_ui_text_color().into())
+                    .finish(),
                 )
                 .with_child(Shrinkable::new(1.0, Empty::new().finish()).finish())
                 .with_child(
@@ -463,22 +474,61 @@ impl PlatformPageWidget {
         let mut header_row = Flex::row()
             .with_cross_axis_alignment(CrossAxisAlignment::Center)
             .with_main_axis_size(MainAxisSize::Max);
-        header_row
-            .add_child(Expanded::new(1., self.render_header_cell(appearance, &warp_i18n::t!("settings-platform-col-name"))).finish());
-        header_row
-            .add_child(Expanded::new(1., self.render_header_cell(appearance, &warp_i18n::t!("settings-platform-col-key"))).finish());
-        if FeatureFlag::TeamApiKeys.is_enabled() {
-            header_row.add_child(
-                Expanded::new(1., self.render_header_cell(appearance, &warp_i18n::t!("settings-platform-col-scope"))).finish(),
-            );
-        }
-        header_row
-            .add_child(Expanded::new(1., self.render_header_cell(appearance, &warp_i18n::t!("settings-platform-col-created"))).finish());
         header_row.add_child(
-            Expanded::new(1., self.render_header_cell(appearance, &warp_i18n::t!("settings-platform-col-last-used"))).finish(),
+            Expanded::new(
+                1.,
+                self.render_header_cell(appearance, &warp_i18n::t!("settings-platform-col-name")),
+            )
+            .finish(),
         );
         header_row.add_child(
-            Expanded::new(1., self.render_header_cell(appearance, &warp_i18n::t!("settings-platform-col-expires-at"))).finish(),
+            Expanded::new(
+                1.,
+                self.render_header_cell(appearance, &warp_i18n::t!("settings-platform-col-key")),
+            )
+            .finish(),
+        );
+        if FeatureFlag::TeamApiKeys.is_enabled() {
+            header_row.add_child(
+                Expanded::new(
+                    1.,
+                    self.render_header_cell(
+                        appearance,
+                        &warp_i18n::t!("settings-platform-col-scope"),
+                    ),
+                )
+                .finish(),
+            );
+        }
+        header_row.add_child(
+            Expanded::new(
+                1.,
+                self.render_header_cell(
+                    appearance,
+                    &warp_i18n::t!("settings-platform-col-created"),
+                ),
+            )
+            .finish(),
+        );
+        header_row.add_child(
+            Expanded::new(
+                1.,
+                self.render_header_cell(
+                    appearance,
+                    &warp_i18n::t!("settings-platform-col-last-used"),
+                ),
+            )
+            .finish(),
+        );
+        header_row.add_child(
+            Expanded::new(
+                1.,
+                self.render_header_cell(
+                    appearance,
+                    &warp_i18n::t!("settings-platform-col-expires-at"),
+                ),
+            )
+            .finish(),
         );
         header_row.add_child(Expanded::new(0.5, self.render_header_cell(appearance, "")).finish());
 
