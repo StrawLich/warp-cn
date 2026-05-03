@@ -3,6 +3,7 @@ use std::borrow::Cow;
 use chrono::{DateTime, Local};
 use session_sharing_protocol::common::SessionId;
 use warp_core::{channel::ChannelState, ui::appearance::Appearance};
+use warp_i18n::t;
 use warpui::{
     color::ColorU,
     ui_components::components::{UiComponent, UiComponentStyles},
@@ -110,7 +111,7 @@ impl SubjectExt for Subject {
             Subject::User(kind) => kind.name(app),
             Subject::PendingUser { email } => email.clone().map(Cow::from),
             Subject::Team(kind) => kind.display_name(app).map(Cow::from),
-            Subject::AnyoneWithLink(_) => Some(Cow::from("Anyone with the link")),
+            Subject::AnyoneWithLink(_) => Some(Cow::from(t!("drive-sharing-anyone-with-link"))),
         }
     }
 
