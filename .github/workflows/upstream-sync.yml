@@ -83,7 +83,7 @@ jobs:
           save-if: false
 
       - name: Run i18n-lint
-        run: cargo xtask i18n-lint
+        run: cargo xtask check-i18n
 
   open-pr:
     needs: [sync, i18n-lint]
@@ -101,7 +101,7 @@ jobs:
             --head "${{ needs.sync.outputs.sync_branch }}" \
             --title "chore(sync): merge upstream/master ($(date -u +%Y-%m-%d))" \
             --label "upstream-sync" \
-            --body $'Automated upstream sync.\n\nMerge produced no conflicts and `cargo xtask i18n-lint` passed.\nReview the diff and merge if it looks good.'
+            --body $'Automated upstream sync.\n\nMerge produced no conflicts and `cargo xtask check-i18n` passed.\nReview the diff and merge if it looks good.'
 
   open-issue:
     needs: sync
