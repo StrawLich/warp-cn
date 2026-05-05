@@ -23,13 +23,16 @@ pub(crate) enum CodebaseIndexBackend {
 /// Selects the active codebase index backend.
 ///
 /// - `WarpCloud` when the user is logged in and `FullSourceCodeEmbedding` is enabled.
-/// - `Auggie` when `AuggieCodebaseIndex` is enabled (regardless of login state).
+/// - `Auggie` when `AuggieCodebaseIndex` is enabled (regardless of login state)
+///   AND the Auggie implementation is compiled in for this target.
 /// - `None` otherwise.
 pub(crate) fn codebase_index_backend(ctx: &AppContext) -> Option<CodebaseIndexBackend> {
     let auth = AuthStateProvider::as_ref(ctx).get();
     if auth.is_logged_in() && FeatureFlag::FullSourceCodeEmbedding.is_enabled() {
         Some(CodebaseIndexBackend::WarpCloud)
-    } else if FeatureFlag::AuggieCodebaseIndex.is_enabled() {
+    } else if cfg!(all(not(target_family = "wasm"), feature = "auggie_codebase_index"))
+        && FeatureFlag::AuggieCodebaseIndex.is_enabled()
+    {
         Some(CodebaseIndexBackend::Auggie)
     } else {
         None
@@ -42,6 +45,23 @@ pub(crate) fn is_local_codebase_index_backend(ctx: &AppContext) -> bool {
 
 pub(crate) fn is_codebase_index_feature_available(ctx: &AppContext) -> bool {
     codebase_index_backend(ctx).is_some()
+}
+
+/// `true` when the active backend is Auggie AND a previous spawn attempt
+/// failed. Used by the settings UI to surface the "auggie unavailable"
+/// tooltip without forcing an eager spawn at render time.
+pub(crate) fn is_auggie_backend_unavailable(ctx: &AppContext) -> bool {
+    if codebase_index_backend(ctx) != Some(CodebaseIndexBackend::Auggie) {
+        return false;
+    }
+    #[cfg(all(not(target_family = "wasm"), feature = "auggie_codebase_index"))]
+    {
+        crate::ai::auggie_mcp::AuggieMcpClientModel::as_ref(ctx).is_unavailable()
+    }
+    #[cfg(not(all(not(target_family = "wasm"), feature = "auggie_codebase_index")))]
+    {
+        false
+    }
 }
 
 /// Whether codebase indexing should be enabled for the active backend.
@@ -173,4 +193,31 @@ mod tests {
 
     // Group 7 will add integration coverage for
     // `is_codebase_context_enabled_for_indexing` against the full settings stack.
+
+    #[cfg(all(not(target_family = "wasm"), feature = "auggie_codebase_index"))]
+    #[test]
+    fn auggie_unavailable_reflects_recorded_spawn_failure() {
+        use crate::ai::auggie_mcp::AuggieMcpClientModel;
+
+        App::test((), |mut app| async move {
+            let _c = FeatureFlag::FullSourceCodeEmbedding.override_enabled(false);
+            let _a = FeatureFlag::AuggieCodebaseIndex.override_enabled(true);
+            install_auth(&mut app, false);
+            app.add_singleton_model(|_| AuggieMcpClientModel::new_for_test_unavailable());
+
+            app.read(|ctx| assert!(is_auggie_backend_unavailable(ctx)));
+        });
+    }
+
+    #[cfg(all(not(target_family = "wasm"), feature = "auggie_codebase_index"))]
+    #[test]
+    fn auggie_unavailable_false_when_backend_not_auggie() {
+        App::test((), |mut app| async move {
+            let _c = FeatureFlag::FullSourceCodeEmbedding.override_enabled(false);
+            let _a = FeatureFlag::AuggieCodebaseIndex.override_enabled(false);
+            install_auth(&mut app, false);
+
+            app.read(|ctx| assert!(!is_auggie_backend_unavailable(ctx)));
+        });
+    }
 }

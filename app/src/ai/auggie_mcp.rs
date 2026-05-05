@@ -6,6 +6,7 @@
 
 use std::path::PathBuf;
 use std::process::Stdio;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use anyhow::anyhow;
@@ -57,12 +58,14 @@ pub(crate) trait AuggieMcpClient: Send + Sync + 'static {
 
 pub(crate) struct AuggieMcpClientModel {
     client: Arc<OnceCell<Arc<dyn AuggieMcpClient>>>,
+    last_spawn_failed: Arc<AtomicBool>,
 }
 
 impl AuggieMcpClientModel {
     pub(crate) fn new(_ctx: &mut ModelContext<Self>) -> Self {
         Self {
             client: Arc::new(OnceCell::const_new()),
+            last_spawn_failed: Arc::new(AtomicBool::new(false)),
         }
     }
 
@@ -70,7 +73,18 @@ impl AuggieMcpClientModel {
     pub(crate) fn new_for_test(client: Arc<dyn AuggieMcpClient>) -> Self {
         let cell = Arc::new(OnceCell::const_new());
         let _ = cell.set(client);
-        Self { client: cell }
+        Self {
+            client: cell,
+            last_spawn_failed: Arc::new(AtomicBool::new(false)),
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn new_for_test_unavailable() -> Self {
+        Self {
+            client: Arc::new(OnceCell::const_new()),
+            last_spawn_failed: Arc::new(AtomicBool::new(true)),
+        }
     }
 
     /// Returns an `Arc<dyn AuggieMcpClient>` whose first `codebase_retrieval`
@@ -80,19 +94,31 @@ impl AuggieMcpClientModel {
     pub(crate) fn client_handle(&self) -> Arc<dyn AuggieMcpClient> {
         Arc::new(LazyAuggieMcpClient {
             client: self.client.clone(),
+            last_spawn_failed: self.last_spawn_failed.clone(),
         })
     }
 
+    /// Synchronous availability snapshot for settings UI. `true` once a spawn
+    /// attempt has failed; flips back to `false` on the next successful spawn.
+    ///
+    /// `Ordering::Relaxed` is sound: the flag is an independent advisory bool
+    /// with no companion data that needs synchronization, and the UI only
+    /// renders an eventually-correct tooltip.
+    pub(crate) fn is_unavailable(&self) -> bool {
+        self.last_spawn_failed.load(Ordering::Relaxed)
+    }
+
     pub(crate) async fn client(&self) -> Result<Arc<dyn AuggieMcpClient>, AuggieMcpError> {
-        Self::client_from_cell(&self.client).await
+        Self::client_from_cell(&self.client, &self.last_spawn_failed).await
     }
 
     async fn client_from_cell(
         client: &OnceCell<Arc<dyn AuggieMcpClient>>,
+        last_spawn_failed: &Arc<AtomicBool>,
     ) -> Result<Arc<dyn AuggieMcpClient>, AuggieMcpError> {
         client
             .get_or_try_init(|| async {
-                let service = AuggieMcpService::spawn().await?;
+                let service = AuggieMcpService::spawn_with_flag(last_spawn_failed.clone()).await?;
                 Ok(Arc::new(service) as Arc<dyn AuggieMcpClient>)
             })
             .await
@@ -108,6 +134,7 @@ impl SingletonEntity for AuggieMcpClientModel {}
 
 struct LazyAuggieMcpClient {
     client: Arc<OnceCell<Arc<dyn AuggieMcpClient>>>,
+    last_spawn_failed: Arc<AtomicBool>,
 }
 
 #[async_trait]
@@ -117,7 +144,7 @@ impl AuggieMcpClient for LazyAuggieMcpClient {
         query: String,
         directory: PathBuf,
     ) -> Result<Vec<AuggieExcerpt>, AuggieMcpError> {
-        AuggieMcpClientModel::client_from_cell(&self.client)
+        AuggieMcpClientModel::client_from_cell(&self.client, &self.last_spawn_failed)
             .await?
             .codebase_retrieval(query, directory)
             .await
@@ -131,13 +158,28 @@ struct AuggieMcpConnection {
 
 pub(crate) struct AuggieMcpService {
     connection: Mutex<Option<AuggieMcpConnection>>,
+    /// Shared with `AuggieMcpClientModel`; flipped on every (re)connect outcome
+    /// so the settings UI can surface an "auggie unavailable" tooltip.
+    last_spawn_failed: Arc<AtomicBool>,
 }
 
 impl AuggieMcpService {
-    pub(crate) async fn spawn() -> Result<Self, AuggieMcpError> {
-        Ok(Self {
-            connection: Mutex::new(Some(spawn_connection().await?)),
-        })
+    async fn spawn_with_flag(
+        last_spawn_failed: Arc<AtomicBool>,
+    ) -> Result<Self, AuggieMcpError> {
+        match spawn_connection().await {
+            Ok(connection) => {
+                last_spawn_failed.store(false, Ordering::Relaxed);
+                Ok(Self {
+                    connection: Mutex::new(Some(connection)),
+                    last_spawn_failed,
+                })
+            }
+            Err(err) => {
+                last_spawn_failed.store(true, Ordering::Relaxed);
+                Err(err)
+            }
+        }
     }
 
     async fn reconnect(&self) -> Result<(), AuggieMcpError> {
@@ -145,8 +187,17 @@ impl AuggieMcpService {
         if let Some(old_connection) = connection.take() {
             cancel_connection(old_connection);
         }
-        *connection = Some(spawn_connection().await?);
-        Ok(())
+        match spawn_connection().await {
+            Ok(new_connection) => {
+                *connection = Some(new_connection);
+                self.last_spawn_failed.store(false, Ordering::Relaxed);
+                Ok(())
+            }
+            Err(err) => {
+                self.last_spawn_failed.store(true, Ordering::Relaxed);
+                Err(err)
+            }
+        }
     }
 
     async fn peer_for_codebase_retrieval(
@@ -440,5 +491,22 @@ impl AuggieMcpClient for MockAuggieMcpClient {
         _directory: PathBuf,
     ) -> Result<Vec<AuggieExcerpt>, AuggieMcpError> {
         Ok(self.excerpts.clone())
+    }
+}
+
+#[cfg(test)]
+mod availability_tests {
+    use super::*;
+
+    #[test]
+    fn fresh_model_reports_available() {
+        let model = AuggieMcpClientModel::new_for_test(Arc::new(MockAuggieMcpClient::new(vec![])));
+        assert!(!model.is_unavailable());
+    }
+
+    #[test]
+    fn recorded_failure_reports_unavailable() {
+        let model = AuggieMcpClientModel::new_for_test_unavailable();
+        assert!(model.is_unavailable());
     }
 }

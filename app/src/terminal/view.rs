@@ -25388,10 +25388,14 @@ impl TypedActionView for TerminalView {
             }
             SummarizeConversation => self.summarize_conversation(ctx),
             IndexProjectSpeedbump => {
+                // Backend-aware so Auggie users (no Warp account) can also
+                // start indexing from the speedbump.
                 let codebase_context_enabled =
-                    UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx);
+                    crate::ai::codebase_index_backend::is_codebase_context_enabled_for_indexing(ctx);
 
-                if FeatureFlag::FullSourceCodeEmbedding.is_enabled() && codebase_context_enabled {
+                if crate::ai::codebase_index_backend::is_codebase_index_feature_available(ctx)
+                    && codebase_context_enabled
+                {
                     #[cfg(feature = "local_fs")]
                     if let Some(current_dir) = self.pwd() {
                         let directory = PathBuf::from(&current_dir);

@@ -578,12 +578,18 @@ impl TypedActionView for CodeSettingsPageView {
         match action {
             CodeSettingsPageAction::ToggleCodebaseContext => {
                 // If the organization has an explicit setting (on or off), ignore user toggles.
+                // Auggie-backed indexing runs entirely locally and does not honour the cloud
+                // admin policy, so toggling is always allowed for it.
+                let is_auggie_backend =
+                    crate::ai::codebase_index_backend::is_local_codebase_index_backend(ctx);
                 let setting = UserWorkspaces::as_ref(ctx).team_allows_codebase_context();
                 match setting {
-                    AdminEnablementSetting::Enable | AdminEnablementSetting::Disable => {
+                    AdminEnablementSetting::Enable | AdminEnablementSetting::Disable
+                        if !is_auggie_backend =>
+                    {
                         return;
                     }
-                    AdminEnablementSetting::RespectUserSetting => {
+                    _ => {
                         // Allow user to toggle
                     }
                 }
@@ -826,7 +832,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     context: &ContextPredicate,
     builder: fn(SettingsAction) -> T,
 ) {
-    if FeatureFlag::FullSourceCodeEmbedding.is_enabled() {
+    if crate::ai::codebase_index_backend::is_codebase_index_feature_available(app) {
         ToggleSettingActionPair::add_toggle_setting_action_pairs_as_bindings(
             vec![ToggleSettingActionPair::new(
                 "codebase index",
@@ -857,6 +863,35 @@ struct CodePageWidget {
     switch_state: SwitchStateHandle,
     auto_index_switch_state: SwitchStateHandle,
     manual_add_directory_button: ViewHandle<ActionButton>,
+}
+
+/// Disabled-tooltip resolver shared by both the legacy `CodePageWidget` and the
+/// new `CodebaseIndexingCategorizedWidget`. Returns `None` when the toggle
+/// should be interactive. Auggie collapses every cloud admin/global-AI arm
+/// down to a single "MCP unavailable" tooltip (or `None` when optimistic).
+fn codebase_indexing_disabled_tooltip(
+    admin_setting: AdminEnablementSetting,
+    global_ai_enabled: bool,
+    is_auggie_backend: bool,
+    is_auggie_unavailable: bool,
+) -> Option<String> {
+    if is_auggie_backend {
+        return is_auggie_unavailable.then(|| {
+            warp_i18n::t!("settings-code-indexing-disabled-auggie-unavailable").to_string()
+        });
+    }
+    match admin_setting {
+        AdminEnablementSetting::Enable => {
+            Some(warp_i18n::t!("settings-code-indexing-workspace-enabled-admin").to_string())
+        }
+        AdminEnablementSetting::Disable => {
+            Some(warp_i18n::t!("settings-code-indexing-disabled-admin").to_string())
+        }
+        AdminEnablementSetting::RespectUserSetting if !global_ai_enabled => {
+            Some(warp_i18n::t!("settings-code-indexing-disabled-global-ai").to_string())
+        }
+        AdminEnablementSetting::RespectUserSetting => None,
+    }
 }
 
 impl SettingsWidget for CodePageWidget {
@@ -898,8 +933,9 @@ impl SettingsWidget for CodePageWidget {
             appearance,
         ));
 
-        let codebase_context_enabled = UserWorkspaces::as_ref(app).is_codebase_context_enabled(app);
-        if global_ai_enabled && codebase_context_enabled {
+        let codebase_context_enabled =
+            crate::ai::codebase_index_backend::is_codebase_context_enabled_for_indexing(app);
+        if codebase_context_enabled {
             content.add_children(self.render_autoindexing_rows(appearance, app));
         }
 
@@ -933,7 +969,7 @@ impl CodePageWidget {
     ) -> Vec<Box<dyn Element>> {
         let auto_indexing_enabled = *CodeSettings::as_ref(app).auto_indexing_enabled;
         let codebase_indexing_enabled =
-            UserWorkspaces::as_ref(app).is_codebase_context_enabled(app);
+            crate::ai::codebase_index_backend::is_codebase_context_enabled_for_indexing(app);
 
         let mut rows = vec![
             self.render_autoindex_row(auto_indexing_enabled, appearance),
@@ -1097,24 +1133,19 @@ impl CodePageWidget {
 
         let is_auggie_backend =
             crate::ai::codebase_index_backend::is_local_codebase_index_backend(app);
+        let is_auggie_unavailable =
+            crate::ai::codebase_index_backend::is_auggie_backend_unavailable(app);
 
         let switch = ui_builder
             .switch(self.switch_state.clone())
-            .check(UserWorkspaces::as_ref(app).is_codebase_context_enabled(app));
+            .check(crate::ai::codebase_index_backend::is_codebase_context_enabled_for_indexing(app));
 
-        let disabled_tooltip_text: Option<String> = match admin_setting {
-            AdminEnablementSetting::Enable => {
-                Some(warp_i18n::t!("settings-code-indexing-workspace-enabled-admin").to_string())
-            }
-            AdminEnablementSetting::Disable => {
-                Some(warp_i18n::t!("settings-code-indexing-disabled-admin").to_string())
-            }
-            // Auggie backend bypasses the global-AI gate (no Warp account required).
-            AdminEnablementSetting::RespectUserSetting if !global_ai_enabled && !is_auggie_backend => {
-                Some(warp_i18n::t!("settings-code-indexing-disabled-global-ai").to_string())
-            }
-            AdminEnablementSetting::RespectUserSetting => None,
-        };
+        let disabled_tooltip_text = codebase_indexing_disabled_tooltip(
+            admin_setting,
+            global_ai_enabled,
+            is_auggie_backend,
+            is_auggie_unavailable,
+        );
 
         let toggle_element = if let Some(tooltip_text) = disabled_tooltip_text {
             switch
@@ -2148,7 +2179,12 @@ impl SettingsWidget for CodebaseIndexingCategorizedWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         let global_ai_enabled = AISettings::as_ref(app).is_any_ai_enabled(app);
-        let codebase_context_enabled = UserWorkspaces::as_ref(app).is_codebase_context_enabled(app);
+        let is_auggie_backend =
+            crate::ai::codebase_index_backend::is_local_codebase_index_backend(app);
+        let is_auggie_unavailable =
+            crate::ai::codebase_index_backend::is_auggie_backend_unavailable(app);
+        let codebase_context_enabled =
+            crate::ai::codebase_index_backend::is_codebase_context_enabled_for_indexing(app);
 
         let mut content = Flex::column();
 
@@ -2158,18 +2194,12 @@ impl SettingsWidget for CodebaseIndexingCategorizedWidget {
             .switch(self.inner.switch_state.clone())
             .check(codebase_context_enabled);
 
-        let disabled_tooltip_text: Option<String> = match admin_setting {
-            AdminEnablementSetting::Enable => {
-                Some(warp_i18n::t!("settings-code-indexing-workspace-enabled-admin").to_string())
-            }
-            AdminEnablementSetting::Disable => {
-                Some(warp_i18n::t!("settings-code-indexing-disabled-admin").to_string())
-            }
-            AdminEnablementSetting::RespectUserSetting if !global_ai_enabled => {
-                Some(warp_i18n::t!("settings-code-indexing-disabled-global-ai").to_string())
-            }
-            AdminEnablementSetting::RespectUserSetting => None,
-        };
+        let disabled_tooltip_text = codebase_indexing_disabled_tooltip(
+            admin_setting,
+            global_ai_enabled,
+            is_auggie_backend,
+            is_auggie_unavailable,
+        );
 
         let toggle_element = if let Some(tooltip_text) = disabled_tooltip_text {
             switch
@@ -2199,8 +2229,10 @@ impl SettingsWidget for CodebaseIndexingCategorizedWidget {
             Some(warp_i18n::t!("settings-code-codebase-index-description").to_string()),
         ));
 
-        // Auto-indexing toggle (only shown when codebase indexing is enabled)
-        if global_ai_enabled && codebase_context_enabled {
+        // Auto-indexing toggle (only shown when codebase indexing is enabled).
+        // `codebase_context_enabled` is now backend-aware, so the bare global-AI
+        // gate is redundant.
+        if codebase_context_enabled {
             let auto_indexing_enabled = *CodeSettings::as_ref(app).auto_indexing_enabled;
 
             content.add_child(render_body_item::<CodeSettingsPageAction>(
@@ -2326,8 +2358,8 @@ impl SettingsPageMeta for CodeSettingsPageView {
         self.page.update_filter(query, ctx)
     }
 
-    fn should_render(&self, _ctx: &AppContext) -> bool {
-        FeatureFlag::FullSourceCodeEmbedding.is_enabled()
+    fn should_render(&self, ctx: &AppContext) -> bool {
+        crate::ai::codebase_index_backend::is_codebase_index_feature_available(ctx)
             || FeatureFlag::OpenWarpNewSettingsModes.is_enabled()
     }
 

@@ -13,7 +13,6 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use warp_core::features::FeatureFlag;
 
 use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
 
@@ -198,7 +197,7 @@ impl GetRelevantFilesController {
         const MINIMUM_FILE_COUNT_FOR_API_CALL: usize = 2;
         self.cancel_request_for_action(&action_id, ctx);
 
-        if FeatureFlag::FullSourceCodeEmbedding.is_enabled() {
+        if crate::ai::codebase_index_backend::is_codebase_index_feature_available(ctx) {
             let codebase_mgr = CodebaseIndexManager::handle(ctx);
             if let Some(base_path) = codebase_mgr.as_ref(ctx).root_path_for_codebase(directory) {
                 match codebase_mgr.update(ctx, |index_manager, ctx| {
@@ -328,7 +327,7 @@ impl GetRelevantFilesController {
     /// Returns the path to the root directory for a codebase search where pwd is `directory`.
     pub fn root_directory_for_search(&self, directory: &Path, app: &AppContext) -> Option<PathBuf> {
         let mut start = None;
-        if FeatureFlag::FullSourceCodeEmbedding.is_enabled() {
+        if crate::ai::codebase_index_backend::is_codebase_index_feature_available(app) {
             start = CodebaseIndexManager::as_ref(app).root_path_for_codebase(directory);
         }
         start.or_else(|| {

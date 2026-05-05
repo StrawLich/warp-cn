@@ -1857,9 +1857,11 @@ fn initialize_app(
     ctx.add_singleton_model(DefaultTerminal::new);
 
     #[cfg(all(not(target_family = "wasm"), feature = "auggie_codebase_index"))]
-    if is_local_codebase_index_backend(ctx) {
-        // Lazy holder only — AuggieMcpService::spawn() runs on first use so app
-        // startup never blocks on auggie process creation or MCP initialize.
+    {
+        // Always register so the settings page (and runtime backend switches
+        // after login/logout) can read availability without `as_ref` panicking.
+        // The model is a lazy holder only — AuggieMcpService spawn runs on
+        // first use, so app startup never blocks on the auggie process.
         ctx.add_singleton_model(AuggieMcpClientModel::new);
     }
 

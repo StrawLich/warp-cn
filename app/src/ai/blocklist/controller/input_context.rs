@@ -66,8 +66,11 @@ pub(super) fn input_context_for_request(
         context.push(AIAgentContext::ExecutionEnvironment(env));
     }
 
-    if FeatureFlag::FullSourceCodeEmbedding.is_enabled()
-        && FeatureFlag::CrossRepoContext.is_enabled()
+    // Auggie backend is local + single-MCP, so cross-repo behaviour is implicit;
+    // for Cloud, keep the existing CrossRepoContext gate.
+    if crate::ai::codebase_index_backend::is_codebase_index_feature_available(app)
+        && (crate::ai::codebase_index_backend::is_local_codebase_index_backend(app)
+            || FeatureFlag::CrossRepoContext.is_enabled())
     {
         for (codebase_path, status) in
             CodebaseIndexManager::as_ref(app).get_codebase_index_statuses(app)

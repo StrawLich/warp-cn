@@ -387,7 +387,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
         .with_group(bindings::BindingGroup::WarpAi)],
         app,
     );
-    if !FeatureFlag::FullSourceCodeEmbedding.is_enabled() {
+    if !crate::ai::codebase_index_backend::is_codebase_index_feature_available(app) {
         ToggleSettingActionPair::add_toggle_setting_action_pairs_as_bindings(
             vec![ToggleSettingActionPair::new(
                 &warp_i18n::t!("settings-ai-cmd-suffix-codebase-index"),
@@ -4433,7 +4433,7 @@ impl AgentsWidget {
             widget_children.push(mcp_permissions);
         }
 
-        if !FeatureFlag::FullSourceCodeEmbedding.is_enabled() {
+        if !crate::ai::codebase_index_backend::is_codebase_index_feature_available(app) {
             let codebase_context = Self::render_codebase_context_outline_generation_setting(
                 self.codebase_context_toggle.clone(),
                 self.codebase_context_link_index.clone(),
@@ -4709,11 +4709,14 @@ impl AgentsWidget {
         app: &warpui::AppContext,
     ) -> Box<dyn Element> {
         let code_settings = CodeSettings::as_ref(app);
+        // Auggie backend works without Warp AI being globally enabled.
+        let can_toggle = ai_settings.is_any_ai_enabled(app)
+            || crate::ai::codebase_index_backend::is_local_codebase_index_backend(app);
         let toggle = render_ai_setting_toggle::<CodebaseContextEnabled>(
             warp_i18n::t!("settings-ai-codebase-context"),
             AISettingsPageAction::ToggleCodebaseContext,
             *code_settings.codebase_context_enabled,
-            ai_settings.is_any_ai_enabled(app),
+            can_toggle,
             codebase_context_toggle,
             &view.local_only_icon_tooltip_states,
             app,
@@ -4732,7 +4735,7 @@ impl AgentsWidget {
                 CONTENT_FONT_SIZE,
                 appearance.ui_font_family(),
                 appearance.ui_font_family(),
-                styles::description_font_color(ai_settings.is_any_ai_enabled(app), app).into(),
+                styles::description_font_color(can_toggle, app).into(),
                 codebase_context_link_index,
             )
             .with_hyperlink_font_color(appearance.theme().accent().into_solid())

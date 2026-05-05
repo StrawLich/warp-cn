@@ -27,7 +27,6 @@ use anyhow::Context;
 use chrono::Utc;
 use itertools::Itertools;
 use lsp::supported_servers::LSPServerType;
-use warp_core::features::FeatureFlag;
 #[cfg(feature = "local_fs")]
 use warpui::windowing::WindowManager;
 use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
@@ -233,7 +232,7 @@ impl PersistedWorkspace {
             })
             .collect();
 
-        if FeatureFlag::FullSourceCodeEmbedding.is_enabled() {
+        if crate::ai::codebase_index_backend::is_codebase_index_feature_available(ctx) {
             ctx.subscribe_to_model(
                 &CodebaseIndexManager::handle(ctx),
                 |me, event, ctx| match event {
