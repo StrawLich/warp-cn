@@ -1055,6 +1055,31 @@ pub struct Workspace {
     remove_tab_config_confirmation_dialog: ViewHandle<RemoveTabConfigConfirmationDialog>,
 }
 
+/// Returns true when the user-menu "What's new" item should display the
+/// red bullet — i.e. the warp-cn fork (Channel::Oss) detects a release tag
+/// the user has not yet acknowledged via `Settings::mark_changelog_shown`.
+/// Always false on upstream channels, so this never alters their UX.
+fn whats_new_dot_visible(app: &AppContext) -> bool {
+    if ChannelState::channel() != Channel::Oss {
+        return false;
+    }
+    let Some(version) = ChannelState::app_version() else {
+        return false;
+    };
+    let Ok(Some(versions_json)) = app
+        .private_user_preferences()
+        .read_value(crate::settings::CHANGELOG_VERSIONS)
+    else {
+        // No record yet → first time on this version → unread.
+        return true;
+    };
+    serde_json::from_str::<serde_json::Value>(&versions_json)
+        .ok()
+        .and_then(|v| v[version].as_bool())
+        .map(|seen| !seen)
+        .unwrap_or(true)
+}
+
 impl Workspace {
     pub fn is_tab_drag_preview(&self) -> bool {
         self.is_tab_drag_preview
@@ -5945,6 +5970,10 @@ impl Workspace {
             );
             ctx.notify();
         });
+        // The Oss-only red-dot dismissal happens in the
+        // ChangelogRequestComplete handler (UserAction arm) once the
+        // fetch actually succeeds — marking here would clear the dot on
+        // a transient network failure even though the user saw nothing.
         self.check_for_changelog(ChangelogRequestType::UserAction, ctx);
     }
 
@@ -8349,10 +8378,19 @@ impl Workspace {
             }
         }
 
+        // warp-cn: highlight the "What's new" menu item in red when the
+        // latest changelog has not yet been viewed. Mirrors the existing
+        // autoupdate "Update and relaunch" pattern (red text only — no
+        // bullet glyph, to keep the a11y label and RTL layout intact).
+        // Always plain on upstream channels so their UX is unchanged.
+        let mut whats_new_field = MenuItemFields::new(warp_i18n::t!("menu-user-whats-new"))
+            .with_on_select_action(WorkspaceAction::ViewLatestChangelog);
+        if whats_new_dot_visible(app) {
+            whats_new_field =
+                whats_new_field.with_override_text_color(appearance.theme().ansi_fg_red());
+        }
+        items.push(whats_new_field.into_item());
         items.extend([
-            MenuItemFields::new(warp_i18n::t!("menu-user-whats-new"))
-                .with_on_select_action(WorkspaceAction::ViewLatestChangelog)
-                .into_item(),
             MenuItemFields::new(warp_i18n::t!("menu-user-settings"))
                 .with_on_select_action(WorkspaceAction::ShowSettings)
                 .into_item(),
@@ -12574,11 +12612,23 @@ impl Workspace {
         let should_show_changelog = match event {
             ChangelogEvent::ChangelogRequestFailed {
                 request_type: ChangelogRequestType::UserAction,
+            } => {
+                request_type = Some(ChangelogRequestType::UserAction);
+                true
             }
-            | ChangelogEvent::ChangelogRequestComplete {
+            ChangelogEvent::ChangelogRequestComplete {
                 request_type: ChangelogRequestType::UserAction,
                 ..
             } => {
+                // warp-cn: dismiss the user-menu red dot only after the
+                // changelog has actually loaded — a transient network
+                // failure must not silently clear the indicator.
+                // Oss-gated to keep upstream UserAction behavior intact.
+                if ChannelState::channel() == Channel::Oss {
+                    if let Some(version) = ChannelState::app_version() {
+                        Settings::mark_changelog_shown(version, ctx);
+                    }
+                }
                 request_type = Some(ChangelogRequestType::UserAction);
                 true
             }

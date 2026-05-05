@@ -1,5 +1,6 @@
 use instant::Instant;
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
+use warp_core::channel::{Channel, ChannelState};
 use warp_core::features::FeatureFlag;
 use warp_i18n::t;
 use warpui::{
@@ -361,12 +362,19 @@ impl SectionView for ChangelogSectionView {
     }
 
     fn section_link(&self, appearance: &Appearance) -> Option<Box<dyn Element>> {
+        // warp-cn fork redirects "View all changelog" to its own GitHub
+        // Releases page; non-Oss channels keep the upstream docs link.
+        let url = if ChannelState::channel() == Channel::Oss {
+            crate::github_update::REPO_RELEASES_URL.to_string()
+        } else {
+            "https://docs.warp.dev/changelog".to_string()
+        };
         Some(
             appearance
                 .ui_builder()
                 .link(
                     t!("resource-center-changelog-read-all").into(),
-                    Some("https://docs.warp.dev/changelog".into()),
+                    Some(url),
                     None,
                     self.changelog_button_mouse_states
                         .view_changelogs_mouse_state

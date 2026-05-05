@@ -30,7 +30,7 @@ mod install;
 pub(crate) use auto_check::register as register_auto_check;
 
 const REPO_API_URL: &str = "https://api.github.com/repos/Heartcoolman/warp-cn/releases/latest";
-const REPO_RELEASES_URL: &str = "https://github.com/Heartcoolman/warp-cn/releases";
+pub(crate) const REPO_RELEASES_URL: &str = "https://github.com/Heartcoolman/warp-cn/releases";
 const REPO_TAGS_API: &str =
     "https://api.github.com/repos/Heartcoolman/warp-cn/git/matching-refs/tags/";
 const REPO_GIT_TAGS_API: &str = "https://api.github.com/repos/Heartcoolman/warp-cn/git/tags/";
@@ -254,9 +254,69 @@ struct GithubRelease {
     tag_name: String,
     html_url: Option<String>,
     #[serde(default)]
+    body: String,
+    #[serde(default)]
+    published_at: Option<String>,
+    #[serde(default)]
     prerelease: bool,
     #[serde(default)]
     assets: Vec<ReleaseAsset>,
+}
+
+/// Trimmed view of a release used by the in-app "What's New" panel.
+/// Decoupled from `GithubRelease` so the public surface stays stable
+/// even if the GitHub schema we deserialize evolves.
+///
+/// Note: the `/releases/latest` endpoint we hit deliberately skips
+/// drafts and prereleases. If the fork ever publishes prereleases the
+/// What's New panel will lag the actual release; switch to `/releases`
+/// + first-non-draft if that ever ships.
+#[derive(Clone, Debug)]
+pub struct ReleaseNotes {
+    pub tag: String,
+    pub body: String,
+    /// RFC 3339 timestamp from the GitHub Releases payload. Left as an
+    /// `Option<String>` so the caller (autoupdate::changelog) owns parsing
+    /// — keeps this module free of chrono.
+    pub published_at: Option<String>,
+}
+
+/// Fetches the latest release notes from the fork's GitHub Releases.
+///
+/// Mirrors [`check_for_update`]'s transport layer (fresh `reqwest::Client`,
+/// same UA / Accept / optional token) so we don't leak warp telemetry
+/// headers to api.github.com.
+pub async fn fetch_release_notes() -> Result<ReleaseNotes> {
+    let client = reqwest::Client::builder()
+        .timeout(REQUEST_TIMEOUT)
+        .build()
+        .context("Failed to construct reqwest client")?;
+    let mut request = client
+        .get(REPO_API_URL)
+        .header(reqwest::header::USER_AGENT, USER_AGENT)
+        .header(reqwest::header::ACCEPT, ACCEPT_HEADER);
+    if let Some(token) = resolve_github_token() {
+        request = request.header(reqwest::header::AUTHORIZATION, format!("Bearer {token}"));
+    }
+    let release: GithubRelease = request
+        .send()
+        .await
+        .context("Failed to fetch latest GitHub release")?
+        .error_for_status()
+        .context("GitHub latest release request failed")?
+        .json()
+        .await
+        .context("Failed to parse latest GitHub release response")?;
+
+    if release.tag_name.is_empty() {
+        bail!("GitHub release missing tag_name");
+    }
+
+    Ok(ReleaseNotes {
+        tag: release.tag_name,
+        body: release.body,
+        published_at: release.published_at,
+    })
 }
 
 #[derive(Deserialize)]
