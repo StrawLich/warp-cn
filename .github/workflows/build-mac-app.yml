@@ -28,9 +28,11 @@ on:
     tags:
       - 'v*'
 
-# tag 触发时需要 contents:write 才能调 `gh release create`。
+# tag 触发时需要 contents:write 才能调 `gh release create`；
+# actions:write 给 prune step 用，删除同 (arch, channel, profile) 三元组下的旧 rust-cache。
 permissions:
   contents: write
+  actions: write
 
 jobs:
   build:
@@ -78,10 +80,43 @@ jobs:
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
-          # 不同架构 / 档次 / profile 分别缓存（profile 影响 target 子目录与编译产物）
+          # 不同架构 / 档次 / profile 分别缓存（profile 影响 target 子目录与编译产物）。
+          # rust-cache 默认会把 Cargo.lock 的 hash 加在 key 末尾，并自动配 prefix-only
+          # restore-keys 做 partial fallback —— Cargo.lock 改动只导致受影响 crate 重建，
+          # 其余 deps 仍命中。
           key: mac-${{ matrix.arch }}-${{ inputs.channel || 'oss' }}-${{ inputs.profile || 'release' }}
-          # 只在 master 上保存缓存，分支只读
-          save-if: ${{ github.ref == 'refs/heads/master' }}
+          # master push 与 tag push 都保存；其他分支（PR / sync 分支等）只读，避免污染。
+          save-if: ${{ github.ref == 'refs/heads/master' || github.ref_type == 'tag' }}
+
+      # 单条 release cache ~2.4GB × 双架构 → 一次 build 写入 ~4.8GB；GHA 配额硬上限 10GB，
+      # 不主动清理就会被 GitHub LRU 不可控回收（可能误删本次刚 save 的）。
+      # 策略：按 (arch, channel, profile) 三元组分组，按 last_accessed_at desc 排序，
+      # 跳过最新 2 条（=当前 lock_hash + 1 条 fallback，给 spurious 重建留个回退点），
+      # 删除其余。每个 matrix job 独立 prune 自己的组，互不干扰。
+      - name: Prune stale rust-cache entries (keep latest 2 per arch/channel/profile)
+        if: ${{ github.ref == 'refs/heads/master' || github.ref_type == 'tag' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          # rust-cache 实际生成的 key 形如 v0-rust-{user-key}-{job_hash}-{lock_hash}
+          # 这里按 user-key 做前缀匹配，覆盖同三元组下的所有 lock_hash 变体。
+          PREFIX="v0-rust-mac-${{ matrix.arch }}-${{ inputs.channel || 'oss' }}-${{ inputs.profile || 'release' }}-"
+          REPO="${{ github.repository }}"
+          echo "Prune prefix: $PREFIX"
+          # GH cache list API 的 key 参数走前缀匹配；per_page=100 单组够用。
+          IDS=$(gh api "repos/${REPO}/actions/caches?key=${PREFIX}&per_page=100" \
+            --jq '.actions_caches | sort_by(.last_accessed_at) | reverse | .[2:] | .[].id')
+          if [ -z "$IDS" ]; then
+            echo "Nothing to prune."
+            exit 0
+          fi
+          echo "$IDS" | while read -r id; do
+            [ -n "$id" ] || continue
+            echo "Deleting cache id=$id"
+            gh api -X DELETE "repos/${REPO}/actions/caches/$id" || true
+          done
 
       - name: Install protoc
         run: brew install protobuf
