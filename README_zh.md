@@ -32,6 +32,24 @@ xattr -dr com.apple.quarantine /path/to/Warp-cn.app
 
 > 维护者 fork 后首次启用更新通道：执行 `script/generate_update_keys.sh` 生成 minisign 密钥对，将公钥提交到仓库（`script/warp-update.pub`），私钥放入 GitHub Actions Secret `MINISIGN_SECRET_KEY`。
 
+## macOS 凭据存储（不使用钥匙串）
+
+ad-hoc 签名的 `.app` 每次发版二进制 CDHash 都会变，而 macOS 钥匙串 ACL 对 ad-hoc 二进制是按 CDHash 信任的，没有 designated requirement 可以跨版本共享，因此每次升级都会弹「Warp-cn 想要使用 dev.warp.WarpCn 中的机密信息」。本 fork 在 macOS 上**不使用钥匙串**，登录 token / AI API key / MCP OAuth 凭据全部以 AES-256-GCM 加密文件形式落在：
+
+```
+~/Library/Application Support/dev.warp.WarpCn/dev.warp.WarpCn-<KEY>
+```
+
+文件权限 `0600`，加密方案与本仓库 Linux fallback 同款（见 `crates/warpui_extras/src/secure_storage/mac.rs`）。
+
+**从旧版本（曾使用钥匙串）升级**会触发一次性代价：
+
+- 需要重新登录账号
+- 需要重填 AI API key（设置 → AI）
+- MCP OAuth server 需要重新授权
+
+旧钥匙串条目不会被自动清理（避免再次弹窗）。如要手动清理，打开「钥匙串访问.app」搜索 `dev.warp.WarpCn`，删除 `USER_STORAGE_KEY`、`SECURE_STORAGE_KEY`、`FileBasedMcpCredentials` 三条；不删除也无副作用，仅占用零碎空间。
+
 ## 与上游同步
 
 本 fork 维护者会定期 merge upstream。每个含 UI 字符串的 PR 拆为两步：
