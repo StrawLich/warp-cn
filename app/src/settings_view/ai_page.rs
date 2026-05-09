@@ -2248,6 +2248,10 @@ pub enum AISettingsPageAction {
     /// warp-cn fork: select which provider Direct mode routes to.
     #[cfg(feature = "direct_llm_backend")]
     SelectDirectProvider(ai::direct_backend::DirectProviderKind),
+    /// warp-cn fork: re-fetch the dynamic model catalog from the configured
+    /// provider's `/v1/models` (or equivalent) endpoint.
+    #[cfg(feature = "direct_llm_backend")]
+    RefreshDirectModelCatalog,
     HyperlinkClick(HyperlinkUrl),
     ToggleCodebaseContext,
     ToggleShowInputHintText,
@@ -3010,6 +3014,13 @@ impl TypedActionView for AISettingsPageView {
                 #[cfg(not(target_family = "wasm"))]
                 ApiKeyManager::handle(ctx).update(ctx, |manager, ctx| {
                     drop(refresh_aws_credentials(manager, ctx));
+                });
+                ctx.notify();
+            }
+            #[cfg(feature = "direct_llm_backend")]
+            AISettingsPageAction::RefreshDirectModelCatalog => {
+                LLMPreferences::handle(ctx).update(ctx, |p, inner| {
+                    p.refresh_available_models(inner);
                 });
                 ctx.notify();
             }
@@ -6448,6 +6459,10 @@ impl ApiKeysWidget {
                                     cfg.set_overrides(kind, overrides, inner);
                                 },
                             );
+                            // Pull a fresh model catalog from the new provider.
+                            LLMPreferences::handle(ctx).update(ctx, |p, inner| {
+                                p.refresh_available_models(inner);
+                            });
                         }
                     }
                 });
@@ -6690,6 +6705,37 @@ impl ApiKeysWidget {
             is_enabled,
             app,
         ));
+
+        // warp-cn fork: button to manually re-pull the model catalog from
+        // whichever provider is currently configured. Auto-refresh also fires
+        // on every editor blur, but this lets users force a refresh if a
+        // provider added a new model upstream after they configured the key.
+        #[cfg(feature = "direct_llm_backend")]
+        {
+            let refresh_btn = appearance
+                .ui_builder()
+                .button(
+                    ButtonVariant::Outlined,
+                    Default::default(),
+                )
+                .with_text_label("Refresh model catalog".to_string())
+                .with_style(UiComponentStyles {
+                    height: Some(28.),
+                    padding: Some(Coords {
+                        top: 4.,
+                        bottom: 4.,
+                        left: 12.,
+                        right: 12.,
+                    }),
+                    ..Default::default()
+                })
+                .build()
+                .on_click(|ctx, _, _| {
+                    ctx.dispatch_typed_action(AISettingsPageAction::RefreshDirectModelCatalog);
+                })
+                .finish();
+            column.add_child(Container::new(refresh_btn).with_margin_top(4.).finish());
+        }
 
         // Show upgrade CTA if BYOK is not enabled
         if !is_byo_enabled {
@@ -7352,6 +7398,11 @@ fn make_base_url_editor(
                 let mut overrides = cfg.overrides_for(kind).clone();
                 overrides.base_url = buffer_text;
                 cfg.set_overrides(kind, overrides, inner);
+            });
+            // Endpoint changed → re-fetch the catalog from the new host so
+            // the model picker reflects what's actually available there.
+            LLMPreferences::handle(ctx).update(ctx, |p, inner| {
+                p.refresh_available_models(inner);
             });
         }
     });

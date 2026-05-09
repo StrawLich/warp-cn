@@ -13,6 +13,7 @@ pub mod anthropic;
 pub mod common;
 pub mod computer_use_adapter;
 pub mod gemini;
+pub mod model_catalog;
 pub mod multi_agent;
 pub mod openai;
 
