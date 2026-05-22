@@ -1,6 +1,6 @@
 *.pdb filter=lfs diff=lfs merge=lfs -text
-input_classifier/models/* filter=lfs diff=lfs merge=lfs -text
-input_classifier/models/**/*tokenizer.json linguist-generated=true
+crates/input_classifier/models/** filter=lfs diff=lfs merge=lfs -text
+crates/input_classifier/models/**/*tokenizer.json -filter -diff -merge text linguist-generated=true
 
 # i18n-aware merger auto-resolves pure `use ...;` block conflicts in Rust;
 # everything else falls through to the default 3-way merge.
