@@ -31,6 +31,12 @@ fn main() -> Result<()> {
     println!("cargo:rerun-if-env-changed=GIT_RELEASE_TAG");
     println!("cargo:rerun-if-env-changed=GIT_COMMIT_SHA");
     println!("cargo:rerun-if-env-changed=WARP_UPDATE_PUBKEY");
+    // WARP_RC selects a standalone Windows resource compiler (see
+    // embed_resource_file); INCLUDE is what that compiler reads to find winres.h.
+    // Register both so toggling the portable toolchain reruns this script instead
+    // of reusing a stale .res from the previous resource-compiler branch.
+    println!("cargo:rerun-if-env-changed=WARP_RC");
+    println!("cargo:rerun-if-env-changed=INCLUDE");
 
     emit_git_release_tag_if_unset();
     emit_git_commit_sha_if_unset();
