@@ -100,14 +100,20 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          # tag 触发时把 ref 直接喂给 build.rs；dispatch 触发留空走 git describe。
+          # 确定版本号并显式传给 bundle.ps1（它把 $env:GIT_RELEASE_TAG 透传给
+          # windows-installer.iss 的 /DMyAppVersion 与 prepare_bundled_resources.ps1）。
+          # tag 触发用 ref 名；dispatch 触发用 `git describe` 推导，避免安装包版本号为空。
           if ($env:GITHUB_REF_TYPE -eq 'tag') {
-            $env:GIT_RELEASE_TAG = $env:GITHUB_REF_NAME
-            Write-Output "GIT_RELEASE_TAG=$env:GIT_RELEASE_TAG (from tag ref)"
+            $releaseTag = $env:GITHUB_REF_NAME
+          } else {
+            $releaseTag = (git describe --tags --always 2>$null)
+            if (-not $releaseTag) { $releaseTag = "0.0.0-$($env:GITHUB_SHA.Substring(0,7))" }
           }
+          $env:GIT_RELEASE_TAG = $releaseTag
+          Write-Output "GIT_RELEASE_TAG=$releaseTag"
           $channel = if ($env:INPUT_CHANNEL) { $env:INPUT_CHANNEL } else { 'oss' }
           $buildProfile = if ($env:INPUT_PROFILE) { $env:INPUT_PROFILE } else { 'release' }
-          $bundleArgs = @('-CHANNEL', $channel, '-ARCH', 'x64')
+          $bundleArgs = @('-CHANNEL', $channel, '-ARCH', 'x64', '-RELEASE_TAG', $releaseTag)
           if ($buildProfile -eq 'debug') { $bundleArgs += '-DEBUG_BUILD' }
           Write-Output "Running bundle.ps1 $bundleArgs"
           & .\script\windows\bundle.ps1 @bundleArgs
@@ -149,13 +155,17 @@ jobs:
           $tag = $env:GITHUB_REF_NAME
           $installer = "${{ steps.paths.outputs.installer }}"
           # mac workflow 可能已为同 tag 建好 release；存在则直接上传资产，否则重试等待其出现。
+          # 注意：$ErrorActionPreference='Stop' 不拦截原生命令（gh）的非零退出，
+          # 必须显式检查 $LASTEXITCODE，否则上传失败仍会 exit 0 留下「绿但无产物」。
           for ($i = 1; $i -le 5; $i++) {
-            $exists = (gh release view $tag 2>$null)
+            gh release view $tag 2>$null | Out-Null
             if ($LASTEXITCODE -eq 0) {
               gh release upload $tag $installer --clobber
+              if ($LASTEXITCODE -ne 0) { Write-Error "gh release upload 失败 (exit $LASTEXITCODE)"; exit 1 }
               exit 0
             }
             Start-Sleep -Seconds ($i * 3)
           }
           # 5 次后仍无 release（纯 Windows tag 场景）：自行创建。
           gh release create $tag $installer --title $tag --generate-notes
+          if ($LASTEXITCODE -ne 0) { Write-Error "gh release create 失败 (exit $LASTEXITCODE)"; exit 1 }
