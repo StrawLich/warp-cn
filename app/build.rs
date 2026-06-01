@@ -627,8 +627,15 @@ fn embed_resource_file(target_dir: &Path) {
     let app_name = env::var("WARP_APP_NAME").unwrap_or("Warp".to_owned());
     let bin_name = env::var("CARGO_BIN_NAME").unwrap_or("local".to_owned());
 
+    // The icon lives under channels/<channel>/, where <channel> is the bin name
+    // without the optional `warp-` prefix: the OSS binary is `warp-oss` but its
+    // channel directory is `oss` (likewise the internal `local`/`dev` bins map
+    // directly). Stripping the prefix keeps `cargo build --bin warp-oss` working
+    // on Windows instead of panicking on a missing channels/warp-oss/ path.
+    let channel = bin_name.strip_prefix("warp-").unwrap_or(&bin_name);
+
     let icon_path = Path::new("channels")
-        .join(bin_name)
+        .join(channel)
         .join("icon")
         .join("no-padding")
         .join("icon.ico");
