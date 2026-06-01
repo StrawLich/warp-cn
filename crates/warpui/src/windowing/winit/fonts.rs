@@ -300,24 +300,90 @@ impl Default for TextLayoutSystem {
 
 impl TextLayoutSystem {
     pub fn new() -> Self {
+        let locale = warp_i18n::try_global()
+            .map(|i18n| i18n.current().as_bcp47().to_string())
+            .unwrap_or_else(|| "en".to_string());
+
+        let mut db = cosmic_text::fontdb::Database::new();
+
+        // On Windows, cosmic-text's FontFallbackIter needs CJK typefaces in the
+        // fontdb or Han-script shaping silently yields .notdef glyphs (tofu) in
+        // UI text such as the settings sidebar. Loading the *entire* system
+        // font collection works but enumerates hundreds of faces and adds a
+        // noticeable chunk to startup. Instead, load just the handful of CJK
+        // (+ emoji) fonts that ship with every default Windows install. If none
+        // are found (a stripped/custom image), fall back to a full system scan
+        // so CJK still renders rather than regressing to tofu.
+        #[cfg(target_os = "windows")]
+        {
+            // Resolve %WINDIR%\Fonts so non-C: system drives still work.
+            let fonts_dir = std::env::var_os("WINDIR")
+                .map(std::path::PathBuf::from)
+                .unwrap_or_else(|| std::path::PathBuf::from("C:\\Windows"))
+                .join("Fonts");
+            // Microsoft YaHei (modern Simplified Chinese UI font) regular/bold/
+            // light plus SimSun as a legacy serif fallback. These carry the Han
+            // glyphs the UI needs. `.ttc` collections load all contained faces.
+            const CJK_FONT_FILES: &[&str] = &[
+                "msyh.ttc",
+                "msyhbd.ttc",
+                "msyhl.ttc",
+                "simsun.ttc",
+            ];
+            let mut loaded_cjk = false;
+            for file in CJK_FONT_FILES {
+                if db.load_font_file(fonts_dir.join(file)).is_ok() {
+                    loaded_cjk = true;
+                }
+            }
+            // Segoe UI Emoji keeps emoji glyphs in UI text rendering. It carries
+            // no Han glyphs, so it must NOT count towards loaded_cjk: otherwise a
+            // stripped image that has only the emoji font would skip the fallback
+            // below and still render Chinese as tofu.
+            let _ = db.load_font_file(fonts_dir.join("seguiemj.ttf"));
+            // If no Han-capable face was found (stripped/custom image), fall back
+            // to a full system scan so any other installed CJK font can satisfy
+            // shaping rather than regressing to tofu.
+            if !loaded_cjk {
+                db.load_system_fonts();
+            }
+        }
+
+        let font_system =
+            cosmic_text::FontSystem::new_with_locale_and_db(locale, db);
+
+        // Register every pre-loaded face in font_id_map so that fontdb::IDs
+        // returned by cosmic-text shaping can be resolved back to FontId
+        // without panicking (see insert_font comment at line ~507).
+        //
+        // Collect the assigned FontIds so the fontkit rasterizer (when enabled)
+        // learns about every preloaded face too. insert_font pushes each new id
+        // onto loaded_font_ids_since_last_raster for exactly this reason; without
+        // it, rasterizing a glyph that resolved to a preloaded face panics in
+        // Rasterizer::font_for_id ("Font must exist").
+        #[cfg(feature = "fontkit-rasterizer")]
+        let mut preloaded_font_ids = Vec::new();
+        let font_id_map = {
+            let mut map = BiMap::new();
+            for face in font_system.db().faces() {
+                let font_id = next_font_id();
+                map.insert(font_id, face.id);
+                #[cfg(feature = "fontkit-rasterizer")]
+                preloaded_font_ids.push(font_id);
+            }
+            RwLock::new(map)
+        };
+
         Self {
             families: Default::default(),
-            font_store: RwLock::new(cosmic_text::FontSystem::new_with_locale_and_db(
-                // Match the active i18n locale at construction so cosmic_text biases CJK script
-                // fallback correctly for zh-CN users. Runtime locale switches re-create no caches;
-                // a full FontSystem rebuild on set_locale is intentionally out of scope.
-                warp_i18n::try_global()
-                    .map(|i18n| i18n.current().as_bcp47().to_string())
-                    .unwrap_or_else(|| "en".to_string()),
-                Default::default(),
-            )),
-            font_id_map: Default::default(),
+            font_store: RwLock::new(font_system),
+            font_id_map,
             font_selections: Default::default(),
             loaded_fonts: Default::default(),
             #[cfg(not(target_os = "windows"))]
             fallback_fonts: Default::default(),
             #[cfg(feature = "fontkit-rasterizer")]
-            loaded_font_ids_since_last_raster: Default::default(),
+            loaded_font_ids_since_last_raster: RwLock::new(preloaded_font_ids),
         }
     }
 
