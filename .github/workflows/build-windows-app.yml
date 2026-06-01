@@ -120,10 +120,16 @@ jobs:
           Write-Output "GIT_RELEASE_TAG=$releaseTag"
           $channel = if ($env:INPUT_CHANNEL) { $env:INPUT_CHANNEL } else { 'oss' }
           $buildProfile = if ($env:INPUT_PROFILE) { $env:INPUT_PROFILE } else { 'release' }
-          $bundleArgs = @('-CHANNEL', $channel, '-ARCH', 'x64', '-RELEASE_TAG', $releaseTag)
-          if ($buildProfile -eq 'debug') { $bundleArgs += '-DEBUG_BUILD' }
-          Write-Output "Running bundle.ps1 $bundleArgs"
-          & .\script\windows\bundle.ps1 @bundleArgs
+          # Invoke with named params directly. (Array splatting `@bundleArgs` passes
+          # elements POSITIONALLY, so bundle.ps1's first positional param received the
+          # literal "-CHANNEL" and tripped its ValidateSet — the v0.2026.05.31-cn.0
+          # build failure.)
+          Write-Output "Running bundle.ps1 -CHANNEL $channel -ARCH x64 -RELEASE_TAG $releaseTag (profile=$buildProfile)"
+          if ($buildProfile -eq 'debug') {
+            & .\script\windows\bundle.ps1 -CHANNEL $channel -ARCH x64 -RELEASE_TAG $releaseTag -DEBUG_BUILD
+          } else {
+            & .\script\windows\bundle.ps1 -CHANNEL $channel -ARCH x64 -RELEASE_TAG $releaseTag
+          }
         env:
           INPUT_CHANNEL: ${{ inputs.channel }}
           INPUT_PROFILE: ${{ inputs.profile }}
