@@ -52,10 +52,9 @@ warp_util.workspace = true
 async-broadcast.workspace = true
 futures.workspace = true
 line-ending.workspace = true
-warpui.workspace = true
+warpui_core.workspace = true
 warpui_extras = { workspace = true, features = ["default"] }
 mockito = { workspace = true, optional = true }
-asset_macro.workspace = true
 string-offset.workspace = true
 inventory = "0.3.20"
 chrono.workspace = true
@@ -65,11 +64,7 @@ tokio.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
 # warp-cn fork: read_warp_version_from_bundle / app_id_from_bundle in
-# channel/state.rs use the cocoa/objc bindings (interop with warpui's
-# cocoa-based make_nsstring / AutoreleasePoolGuard helpers). Upstream's objc2
-# migration dropped these here; keep them alongside objc2-foundation.
-cocoa.workspace = true
-objc.workspace = true
+# channel/state.rs read Info.plist values via objc2-foundation's NSBundle.
 objc2-foundation = { workspace = true, features = [
     "NSString",
     "NSURL",

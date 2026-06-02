@@ -743,6 +743,8 @@ pub enum FeatureFlag {
     /// Gates the `/queue` slash command, which lets users queue a follow-up prompt
     /// while the agent is mid-response.
     QueueSlashCommand,
+    /// Extends queued prompts to Cloud Mode setup and follow-up draining.
+    QueuedPromptsV2,
 
     /// Enables an agent tool for the CLI subagent to explicitly transfer command control to the
     /// user.
@@ -949,6 +951,7 @@ pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
     FeatureFlag::LocalComputerUse,
     FeatureFlag::OzLaunchModal,
     FeatureFlag::QueueSlashCommand,
+    FeatureFlag::QueuedPromptsV2,
     // These are enabled via 100% experiment on prod warp-server,
     // but we need to enable here for dogfood builds.
     FeatureFlag::CrossRepoContext,

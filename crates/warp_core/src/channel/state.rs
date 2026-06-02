@@ -448,31 +448,14 @@ fn derive_http_origin_from_ws_url(ws_url: &str) -> Option<String> {
 mod tests;
 
 /// Reads the `WarpVersion` string from the main bundle's Info.plist on macOS.
-/// Wraps the call in an [`AutoreleasePoolGuard`] because this runs at app
-/// startup before AppKit's main event loop sets up the outer pool, so any
-/// `NSString` created here would otherwise leak.
 #[cfg(all(target_os = "macos", not(feature = "test-util")))]
-#[allow(deprecated)]
 fn read_warp_version_from_bundle() -> Option<String> {
-    use cocoa::base::{id, nil};
-    use cocoa::foundation::NSBundle;
-    use objc::{msg_send, sel, sel_impl};
-    use warpui::platform::mac::utils::nsstring_as_str;
-    use warpui::platform::mac::{make_nsstring, AutoreleasePoolGuard};
+    use objc2_foundation::{NSBundle, NSString};
 
-    let _pool = AutoreleasePoolGuard::new();
-    unsafe {
-        let bundle = id::mainBundle();
-        if bundle == nil {
-            return None;
-        }
-        let key = make_nsstring("WarpVersion");
-        let value: id = msg_send![bundle, objectForInfoDictionaryKey: key];
-        if value == nil {
-            return None;
-        }
-        nsstring_as_str(value).ok().map(|s| s.to_string())
-    }
+    let bundle = NSBundle::mainBundle();
+    let key = NSString::from_str("WarpVersion");
+    let value = bundle.objectForInfoDictionaryKey(&key)?;
+    value.downcast_ref::<NSString>().map(|s| s.to_string())
 }
 
 fn app_id_from_bundle() -> Option<AppId> {

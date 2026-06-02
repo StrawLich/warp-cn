@@ -333,7 +333,6 @@ binding-workspace-activate-prev-tab = 激活上一个标签
 binding-workspace-activate-next-tab = 激活下一个标签
 binding-workspace-activate-prev-pane = 激活上一个窗格
 binding-workspace-activate-next-pane = 激活下一个窗格
-binding-workspace-toggle-mouse-reporting = 切换鼠标上报
 # 布局 / 命令面板
 binding-workspace-toggle-keybindings-page = 切换键盘快捷键页
 binding-workspace-open-keybindings-editor = 打开键盘快捷键编辑器

@@ -333,7 +333,6 @@ binding-workspace-activate-prev-tab = Activate previous tab
 binding-workspace-activate-next-tab = Activate next tab
 binding-workspace-activate-prev-pane = Activate previous pane
 binding-workspace-activate-next-pane = Activate next pane
-binding-workspace-toggle-mouse-reporting = Toggle Mouse Reporting
 # Layout / palettes
 binding-workspace-toggle-keybindings-page = Toggle keyboard shortcuts
 binding-workspace-open-keybindings-editor = Open keybindings editor
