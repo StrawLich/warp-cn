@@ -69,6 +69,3 @@ __pycache__/
 
 # Project notes
 .note/
-
-# Local toolchain override (upstream uses 1.92.0, local may differ)
-rust-toolchain.toml
